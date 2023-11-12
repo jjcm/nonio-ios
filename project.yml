@@ -1,0 +1,37 @@
+name: nonio-ios
+options:
+  bundleIdPrefix: com.nonio-ios
+packages:
+  Moya:
+    url: https://github.com/Moya/Moya.git
+    from: 15.0.3
+  Rswift:
+    url: https://github.com/mac-cain13/R.swift.git
+    from: 7.4.0
+  Kingfisher:
+    url: https://github.com/onevcat/Kingfisher.git
+    from: 7.10.0
+targets:
+  nonio-ios:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources: [nonio-ios]
+    dependencies:
+      - package: Moya
+        product: CombineMoya
+      - package: Rswift
+        product: RswiftLibrary
+      - package: Kingfisher
+    buildToolPlugins:
+      - plugin: RswiftGenerateInternalResources
+        package: Rswift
+  nonio-tests:
+    type: bundle.unit-test
+    platform: iOS
+    info:
+      path: nonio-tests/Info.plist
+    dependencies:
+      - target: nonio-ios
+    sources:
+      - path: nonio-tests
