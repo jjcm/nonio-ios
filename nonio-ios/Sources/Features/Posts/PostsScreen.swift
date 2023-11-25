@@ -45,9 +45,13 @@ struct PostsScreen: View {
     
     @ViewBuilder
     func rowItem(_ post: Post) -> some View {
-        PostView(viewModel: .init(post: post), didTapPostLink: { post in
-            viewModel.didTapPostLink(post: post)
-        })
+        NavigationLink {
+            PostDetailView(post: post)
+        } label: {
+            PostView(viewModel: .init(post: post), didTapPostLink: { post in
+                viewModel.didTapPostLink(post: post)
+            })
+        }
         .plainListItem()
     }
     
