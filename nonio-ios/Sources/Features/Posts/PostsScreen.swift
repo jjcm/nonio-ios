@@ -18,25 +18,31 @@ struct PostsScreen: View {
     
     var content: some View {
         NavigationStack {
-            List(viewModel.posts, id: \.ID) { post in
-                rowItem(post)
+            ScrollViewReader { proxy in
+                List(viewModel.posts, id: \.ID) { post in
+                    rowItem(post)
+                        .id(post.ID)
+                }
+                .listStyle(.plain)
+                .listRowSpacing(8)
+                .toolbar {
+                    toolbarItems()
+                }
+                .navigationBarTitleDisplayMode(.inline)
+                .confirmationDialog("Sort by...", isPresented: $showSortActionSheet, titleVisibility: .visible) {
+                    sortButtons()
+                }
+                .confirmationDialog("Top sort timeframe", isPresented: $showSortTimeframeActionSheet, titleVisibility: .visible) {
+                    timeFrameButtons()
+                }
+                .refreshable {
+                    viewModel.fetch()
+                }
+                .onChange(of: viewModel.displayTag, perform: { _ in
+                    proxy.scrollTo(viewModel.posts.first?.ID)
+                })
+                .background(UIColor.secondarySystemBackground.color)
             }
-            .listStyle(.plain)
-            .listRowSpacing(8)
-            .toolbar {
-                toolbarItems()
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .confirmationDialog("Sort by...", isPresented: $showSortActionSheet, titleVisibility: .visible) {
-                sortButtons()
-            }
-            .confirmationDialog("Top sort timeframe", isPresented: $showSortTimeframeActionSheet, titleVisibility: .visible) {
-                timeFrameButtons()
-            }
-            .refreshable {
-                viewModel.fetch()
-            }
-            .background(UIColor.secondarySystemBackground.color)
         }
         .onAppear {
             viewModel.fetch()

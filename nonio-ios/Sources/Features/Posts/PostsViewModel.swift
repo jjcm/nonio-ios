@@ -17,8 +17,8 @@ class PostsViewModel: ObservableObject {
         "#\(currentTag.tag.uppercased())"
     }
     private(set) var getPostParams: GetPostParams = .all
-    private let provider = MoyaProvider<NonioAPI>(plugins: [NetworkLoggerPlugin()])
     private var cancellables: Set<AnyCancellable> = []
+    let provider = MoyaProvider<NonioAPI>(plugins: [NetworkLoggerPlugin()])
     
     func fetch() {
         loading = true
