@@ -1,15 +1,9 @@
 import SwiftUI
 
-struct PostDetailView: View {
-    var contents: [QuillViewRenderObject]
-    var comments: [QuillElement]
-    let parser = QuillParser()
-    
-    let post: Post
-    init(post: Post) {
-        self.post = post
-        self.contents = parser.parseQuillJS(json: post.content)
-        self.comments = []
+struct QuillContentView: View {
+    let contents: [QuillViewRenderObject]
+    init(contents: [QuillViewRenderObject]) {
+        self.contents = contents
     }
     
     var body: some View {
@@ -44,7 +38,7 @@ struct PostDetailView: View {
     }
 }
 
-extension PostDetailView {
+extension QuillContentView {
     struct Layout {
         static let contentHorizontalInset: CGFloat = 16
         static let contentWidth = UIScreen.main.bounds.width - 2 * contentHorizontalInset

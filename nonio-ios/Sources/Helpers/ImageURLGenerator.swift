@@ -8,4 +8,8 @@ struct ImageURLGenerator {
     static func userAvatarURL(user: String) -> URL {
         Constants.AvatarBaseURL.appending(path: "\(user).webp")
     }
+    
+    static func videoURL(path: String) -> URL {
+        Constants.VideoBaseURL.appending(path: "\(path).mp4")
+    }
 }

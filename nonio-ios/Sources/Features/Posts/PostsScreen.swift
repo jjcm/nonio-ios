@@ -52,7 +52,7 @@ struct PostsScreen: View {
     @ViewBuilder
     func rowItem(_ post: Post) -> some View {
         NavigationLink {
-            PostDetailView(post: post)
+            PostDetailsScreen(viewModel: .init(post: post, provider: viewModel.provider))
         } label: {
             PostView(viewModel: .init(post: post), didTapPostLink: { post in
                 viewModel.didTapPostLink(post: post)

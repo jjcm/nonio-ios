@@ -12,8 +12,8 @@ struct Post: Codable {
     let score: Int
     let commentCount: Int
     let tags: [PostTag]
-    let width: Int?
-    let height: Int?
+    let width: CGFloat?
+    let height: CGFloat?
     
     let date: Date
     
@@ -30,8 +30,8 @@ struct Post: Codable {
         self.score = try container.decode(Int.self, forKey: .score)
         self.commentCount = try container.decode(Int.self, forKey: .commentCount)
         self.tags = try container.decode([PostTag].self, forKey: .tags)
-        self.width = try container.decodeIfPresent(Int.self, forKey: .width)
-        self.height = try container.decodeIfPresent(Int.self, forKey: .height)
+        self.width = try container.decodeIfPresent(CGFloat.self, forKey: .width)
+        self.height = try container.decodeIfPresent(CGFloat.self, forKey: .height)
         self.date = Date(timeIntervalSince1970: time / 1000)
     }
     
@@ -46,8 +46,8 @@ struct Post: Codable {
         content: String,
         score: Int,
         commentCount: Int,
-        width: Int? = nil,
-        height: Int? = nil,
+        width: CGFloat? = nil,
+        height: CGFloat? = nil,
         tags: [PostTag],
         date: Date = .now
     ) {

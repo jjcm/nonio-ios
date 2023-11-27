@@ -1,6 +1,6 @@
 import Foundation
 
-struct Tag: Codable, Hashable {
+struct Tag: Decodable, Hashable {
     let tag: String
     let count: Int
 }
