@@ -15,5 +15,9 @@ final class ImageURLTests: XCTestCase {
             ImageURLGenerator.videoURL(path: "abc"),
             URL(string: "https://video.non.io/abc.mp4")
         )
+        XCTAssertEqual(
+            ImageURLGenerator.imageURL(path: "abc"),
+            URL(string: "https://image.non.io/abc.webp")
+        )
     }
 }

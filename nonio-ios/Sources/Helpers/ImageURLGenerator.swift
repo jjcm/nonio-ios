@@ -12,4 +12,8 @@ struct ImageURLGenerator {
     static func videoURL(path: String) -> URL {
         Constants.VideoBaseURL.appending(path: "\(path).mp4")
     }
+    
+    static func imageURL(path: String) -> URL {
+        Constants.ImageBaseURL.appending(path: "\(path).webp")
+    }
 }

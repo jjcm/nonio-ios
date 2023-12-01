@@ -19,7 +19,7 @@ final class PostDetailsViewModel: ObservableObject {
     }
     
     var imageURL: URL? {
-        ImageURLGenerator.thumbnailImageURL(path: post.url)
+        ImageURLGenerator.imageURL(path: post.url)
     }
     
     var videoURL: URL? {
