@@ -1,12 +1,14 @@
 import Foundation
 
-struct CommentModel: Identifiable {
+final class CommentModel: Identifiable, ObservableObject {
     var id: Int {
         comment.id
     }
     let comment: Comment
-    var children: [Comment] = []
     let parser = QuillParser()
+    
+    var children: [CommentModel] = []
+    @Published var isCollapsed = false
     
     init(
         comment: Comment,

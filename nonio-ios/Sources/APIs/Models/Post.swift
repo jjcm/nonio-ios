@@ -68,6 +68,16 @@ struct Post: Codable {
     }
 }
 
+extension Post: Hashable {
+    static func == (lhs: Post, rhs: Post) -> Bool {
+        lhs.ID == rhs.ID
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(ID)
+    }
+}
+
 extension Post {
     enum ContentType: String, Codable {
         case image, text, link, video, html, blog

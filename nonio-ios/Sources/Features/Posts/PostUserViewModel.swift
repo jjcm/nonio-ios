@@ -1,26 +1,50 @@
 import Foundation
 
 struct PostUserViewModel {
-    
-    private let calendar: Calendar
-    
+       
     var scoreString: String {
-        "\(post.score) \(post.score > 1 ? "scores" : "score")"
+        "\(score) \(score > 1 ? "votes" : "vote")"
     }
     
     var dateString: String? {
         let df = DateFormatter.dateComponents
-        return df.string(from: post.date, to: .now)
+        return df.string(from: date, to: .now)
     }
     
     var commentString: String {
-        "\(post.commentCount)"
+        "\(commentCount)"
     }
     
-    let post: Post
+    let showCommentCount: Bool
     
-    init(post: Post, calendar: Calendar = .current) {
-        self.post = post
+    let user: String
+    
+    private let calendar: Calendar
+    private let score: Int
+    private let commentCount: Int
+    private let date: Date
+    
+    init(
+        comment: Comment,
+        calendar: Calendar = .current
+    ) {
+        self.user = comment.user
+        self.score = comment.upvotes
+        self.commentCount = comment.upvotes
+        self.date = comment.parsedDate
+        self.calendar = .current
+        self.showCommentCount = false
+    }
+    
+    init(
+        post: Post,
+        calendar: Calendar = .current
+    ) {
+        self.user = post.user
+        self.score = post.score
+        self.commentCount = post.commentCount
+        self.date = post.date
         self.calendar = calendar
+        self.showCommentCount = true
     }
 }

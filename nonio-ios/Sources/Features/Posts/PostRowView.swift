@@ -1,7 +1,7 @@
 import SwiftUI
 import Kingfisher
 
-struct PostView: View {
+struct PostRowView: View {
     let viewModel: PostViewModel
     var didTapPostLink: ((Post) -> Void)?
     
@@ -41,11 +41,12 @@ struct PostView: View {
             didTapPostLink?(viewModel.post)
         }
         .padding(.horizontal, 16)
+        .padding(.bottom, 8)
         .showIf(viewModel.shouldShowLink)
     }
     
     var userView: some View {
-        PostUserView(post: viewModel.post)
+        PostUserView(viewModel: .init(post: viewModel.post))
             .padding(.horizontal, 16)
     }
     
@@ -74,22 +75,29 @@ struct TagsView: View {
 }
 
 #Preview {
-    PostView(
-        viewModel: .init(post:
-                            Post(
-                                id: 2,
-                                title: "test post",
-                                user: "jjcm",
-                                time: 1699151931000,
-                                url: "avo-coffeeshop",
-                                link: URL(string: "https://www.google.com"),
-                                type: .image,
-                                content: "",
-                                score: 148,
-                                commentCount: 21,
-                                width: 100,
-                                height: 100,
-                                tags: [.init(postID: 1, tag: "hahahahahah", tagID: 1, score: 5), .init(postID: 1, tag: "hahahahahah", tagID: 2, score: 5), .init(postID: 1, tag: "hahahahahah", tagID: 3, score: 5), .init(postID: 1, tag: "hahahahahah", tagID: 1, score: 5),]
-                            ))
+    PostRowView(
+        viewModel: .init(
+            post:
+                Post(
+                    id: 2,
+                    title: "test post",
+                    user: "jjcm",
+                    time: 1699151931000,
+                    url: "avo-coffeeshop",
+                    link: URL(string: "https://www.google.com"),
+                    type: .image,
+                    content: "",
+                    score: 148,
+                    commentCount: 21,
+                    width: 100,
+                    height: 100,
+                    tags: [
+                        .init(postID: 1, tag: "hahahahahah", tagID: 1, score: 5),
+                        .init(postID: 1, tag: "hahahahahah", tagID: 2, score: 5),
+                        .init(postID: 1, tag: "hahahahahah", tagID: 3, score: 5),
+                        .init(postID: 1, tag: "hahahahahah", tagID: 1, score: 5),
+                    ]
+                )
+        )
     )
 }

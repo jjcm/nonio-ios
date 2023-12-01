@@ -3,10 +3,12 @@ import SwiftUI
 struct LinkView: View {
     var urlString: String
     var onTap: () -> Void
-    
+    @State var openURLViewModel = ShowInAppBrowserViewModel()
+
     var body: some View {
         Button {
-            onTap()
+            guard let url = URL(string: urlString) else { return }
+            openURLViewModel.handleURL(url)
         } label: {
             HStack {
                 Icon(image: R.image.link.image, size: .big)
@@ -25,6 +27,7 @@ struct LinkView: View {
             .cornerRadius(10)
             .frame(height: 32)
         }
+        .openURL(viewModel: openURLViewModel)
     }
 }
 

@@ -102,14 +102,15 @@ private extension PostDetailsViewModel {
     func buildCommentHierarchy(from allComments: [Comment]) {
         let commentsDict = Dictionary(uniqueKeysWithValues: allComments.map { ($0.id, CommentModel(comment: $0)) })
 
-        // Function to recursively attach children to their parent
         func attachChildren(to comment: inout CommentModel) {
-            let childComments = allComments.filter { $0.parent == comment.id }
+            let childComments = allComments
+                .filter { $0.parent == comment.id }
+                .map { CommentModel(comment: $0) }
             if !childComments.isEmpty {
                 comment.children = childComments
-                for comment in comment.children {
-                    var commentModel = CommentModel(comment: comment)
-                    attachChildren(to: &commentModel)
+                for child in childComments {
+                    var child = child
+                    attachChildren(to: &child)
                 }
             }
         }
