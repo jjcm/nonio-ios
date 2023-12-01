@@ -5,7 +5,6 @@ struct PostsScreen: View {
     @StateObject var viewModel: PostsViewModel
     @State private var showSortTimeframeActionSheet = false
     @State private var showSortActionSheet = false
-    @State private var navPath = NavigationPath()
     
     var body: some View {
         ZStack {
@@ -18,7 +17,7 @@ struct PostsScreen: View {
     }
     
     var content: some View {
-        NavigationStack(path: $navPath) {
+        NavigationStack {
             ScrollViewReader { proxy in
                 List(viewModel.posts, id: \.ID) { post in
                     rowItem(post)
@@ -30,9 +29,6 @@ struct PostsScreen: View {
                     toolbarItems()
                 }
                 .navigationBarTitleDisplayMode(.inline)
-                .navigationDestination(for: Post.self) { post in
-                    PostDetailsScreen(viewModel: .init(post: post, provider: viewModel.provider))
-                }
                 .confirmationDialog("Sort by...", isPresented: $showSortActionSheet, titleVisibility: .visible) {
                     sortButtons()
                 }
@@ -55,12 +51,16 @@ struct PostsScreen: View {
     
     @ViewBuilder
     func rowItem(_ post: Post) -> some View {
-        Button {
-            navPath.append(post)
-        } label: {
+        ZStack {
             PostRowView(viewModel: .init(post: post), didTapPostLink: { post in
                 viewModel.didTapPostLink(post: post)
             })
+            NavigationLink {
+                PostDetailsScreen(viewModel: .init(post: post, provider: viewModel.provider))
+            } label: {
+                EmptyView()
+            }
+            .opacity(0) // hide navigation link arrow
         }
         .plainListItem()
     }
