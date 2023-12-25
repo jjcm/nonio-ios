@@ -6,6 +6,7 @@ enum NonioAPI {
     case getPosts(GetPostParams)
     case getTags
     case getComments(id: String)
+    case login(user: String, password: String)
 }
 
 extension NonioAPI: TargetType {
@@ -21,6 +22,8 @@ extension NonioAPI: TargetType {
             return "tags"
         case .getComments:
             return "comments"
+        case .login:
+            return "user/login"
         }
     }
     
@@ -28,6 +31,8 @@ extension NonioAPI: TargetType {
         switch self {
         case .getPosts, .getTags, .getComments:
             return .get
+        case .login:
+            return .post
         }
     }
     
@@ -42,6 +47,12 @@ extension NonioAPI: TargetType {
             return .requestParameters(parameters: ["post": id], encoding: URLEncoding.default)
         case .getTags:
             return .requestPlain
+        case .login(let user, let password):
+            let params = [
+                "email": user,
+                "password": password
+            ]
+            return .requestParameters(parameters: params, encoding: JSONEncoding.default)
         }
     }
     
@@ -55,7 +66,7 @@ extension NonioAPI: TargetType {
     
     var sampleData: Data {
         switch self {
-        case .getPosts, .getTags, .getComments:
+        case .getPosts, .getTags, .getComments, .login:
             return Data()
         }
     }
