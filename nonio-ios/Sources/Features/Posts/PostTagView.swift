@@ -11,6 +11,7 @@ private struct PostTagView: View {
             .font(.caption)
             .fontWeight(.semibold)
             .padding(6)
+            .foregroundColor(.blue)
             .background(UIColor.systemGray6.color)
             .cornerRadius(4)
     }

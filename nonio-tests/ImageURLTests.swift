@@ -11,5 +11,13 @@ final class ImageURLTests: XCTestCase {
             ImageURLGenerator.userAvatarURL(user: "abc"),
             URL(string: "https://avatar.non.io/abc.webp")
         )
+        XCTAssertEqual(
+            ImageURLGenerator.videoURL(path: "abc"),
+            URL(string: "https://video.non.io/abc.mp4")
+        )
+        XCTAssertEqual(
+            ImageURLGenerator.imageURL(path: "abc"),
+            URL(string: "https://image.non.io/abc.webp")
+        )
     }
 }

@@ -17,10 +17,7 @@ struct PostViewModel {
     }
     
     var shouldShowImage: Bool {
-        if post.type == .image || post.type == .link {
-            return true
-        }
-        return false
+        post.type == .image
     }
     
     var shouldShowLink: Bool {

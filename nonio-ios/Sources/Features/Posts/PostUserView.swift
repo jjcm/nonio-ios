@@ -2,23 +2,30 @@ import SwiftUI
 import Kingfisher
 
 struct PostUserView: View {
-    let post: Post
     let viewModel: PostUserViewModel
-    init(post: Post) {
-        self.post = post
-        self.viewModel = PostUserViewModel(post: post)
+    let isCollapsed: Bool
+    init(viewModel: PostUserViewModel, isCollapsed: Bool = false) {
+        self.viewModel = viewModel
+        self.isCollapsed = isCollapsed
     }
     
     var body: some View {
         HStack {
             HStack(spacing: 8) {
-                KFImage(ImageURLGenerator.userAvatarURL(user: post.user))
+                KFImage(ImageURLGenerator.userAvatarURL(user: viewModel.user))
+                    .placeholder {
+                        Image(systemName: "person.circle.fill")
+                            .resizable()
+                            .renderingMode(.template)
+                            .frame(width: 16, height: 16)
+                            .foregroundStyle(.primary)
+                    }
                     .resizable()
                     .frame(width: 16, height: 16)
                     .clipShape(Circle())
                     .layoutPriority(1)
                 
-                Text(post.user)
+                Text(viewModel.user)
                     .foregroundColor(.primary)
                     .lineLimit(1)
             }
@@ -27,9 +34,9 @@ struct PostUserView: View {
             
             HStack(spacing: 12) {
                 Text(viewModel.scoreString)
-                    .foregroundColor(.primary)
+                    .foregroundColor(.gray)
                 
-                if let dateString = viewModel.dateString {
+                if let dateString = viewModel.dateString, !isCollapsed {
                     HStack(spacing: 4) {
                         Icon(image: R.image.clock.image, size: .small)
                         Text(dateString)
@@ -40,17 +47,16 @@ struct PostUserView: View {
                     Icon(image: R.image.comment.image, size: .small)
                     Text(viewModel.commentString)
                 }
+                .showIf(viewModel.showCommentCount)
+                
+                Icon(image: R.image.chervronDown.image, size: .small)
+                    .foregroundColor(.secondary)
+                    .showIf(isCollapsed)
             }
-            .foregroundColor(.gray)
+            .foregroundColor(UIColor.darkGray.color)
             .layoutPriority(1)
         }
         .font(.subheadline)
-        .padding(.vertical, 10)
         .cornerRadius(10)
     }
-}
-
-
-#Preview {
-    PostUserView(post: .init(id: 1, title: "", user: "jjcm", time: 1699151931000, url: "", link: nil, type: .blog, content: "", score: 11, commentCount: 12, tags: []))
 }

@@ -1,15 +1,17 @@
 import SwiftUI
 
-struct PostDetailView: View {
-    var contents: [QuillViewRenderObject]
-    var comments: [QuillElement]
-    let parser = QuillParser()
-    
-    let post: Post
-    init(post: Post) {
-        self.post = post
-        self.contents = parser.parseQuillJS(json: post.content)
-        self.comments = []
+struct QuillContentView: View {
+    let contents: [QuillViewRenderObject]
+    let contentWidth: CGFloat
+    let didTapOnURL: ((URL) -> Void)?
+    init(
+        contents: [QuillViewRenderObject],
+        contentWidth: CGFloat,
+        didTapOnURL: ((URL) -> Void)?
+    ) {
+        self.contents = contents
+        self.contentWidth = contentWidth
+        self.didTapOnURL = didTapOnURL
     }
     
     var body: some View {
@@ -24,15 +26,15 @@ struct PostDetailView: View {
 
                         QuillLabel(
                             content: object.content,
-                            width: UIScreen.main.bounds.width
+                            width: UIScreen.main.bounds.width, 
+                            didTapOnURL: didTapOnURL
                         )
                         .frame(height: object.calculateContentHeight(containerWidth: width))
-                        .frame(width: width)
+                        .frame(width: contentWidth)
                     }
                 }
             }
         }
-        .padding(.horizontal, Layout.contentHorizontalInset)
     }
     
     private var quoteBlock: some View {
@@ -44,15 +46,13 @@ struct PostDetailView: View {
     }
 }
 
-extension PostDetailView {
+extension QuillContentView {
     struct Layout {
-        static let contentHorizontalInset: CGFloat = 16
-        static let contentWidth = UIScreen.main.bounds.width - 2 * contentHorizontalInset
         static let blockquoteLeadingMargin: CGFloat = 60
     }
     
     func getTextWidth(object: QuillViewRenderObject) -> CGFloat {
         let quoteLeading = object.isQuote ? Layout.blockquoteLeadingMargin : 0
-        return Layout.contentWidth - quoteLeading
+        return contentWidth - quoteLeading
     }
 }

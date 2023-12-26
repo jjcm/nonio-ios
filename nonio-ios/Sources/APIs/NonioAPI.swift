@@ -5,6 +5,7 @@ import Combine
 enum NonioAPI {
     case getPosts(GetPostParams)
     case getTags
+    case getComments(id: String)
 }
 
 extension NonioAPI: TargetType {
@@ -18,12 +19,14 @@ extension NonioAPI: TargetType {
             return "posts"
         case .getTags:
             return "tags"
+        case .getComments:
+            return "comments"
         }
     }
     
     var method: Moya.Method {
         switch self {
-        case .getPosts, .getTags:
+        case .getPosts, .getTags, .getComments:
             return .get
         }
     }
@@ -35,9 +38,10 @@ extension NonioAPI: TargetType {
                 parameters: params.toRequestParams, 
                 encoding: URLEncoding.default
             )
+        case .getComments(let id):
+            return .requestParameters(parameters: ["post": id], encoding: URLEncoding.default)
         case .getTags:
             return .requestPlain
-
         }
     }
     
@@ -51,7 +55,7 @@ extension NonioAPI: TargetType {
     
     var sampleData: Data {
         switch self {
-        case .getPosts, .getTags:
+        case .getPosts, .getTags, .getComments:
             return Data()
         }
     }
