@@ -6,11 +6,13 @@ enum NonioAPI {
     case getPosts(GetPostParams)
     case getTags
     case getComments(id: String)
+    case login(user: String, password: String)
+    case userInfo(user: String)
 }
 
-extension NonioAPI: TargetType {
+extension NonioAPI: TargetType, AccessTokenAuthorizable {
     var baseURL: URL {
-        return URL(string: "https://api.non.io")!
+        return Configuration.API_HOST
     }
     
     var path: String {
@@ -21,13 +23,19 @@ extension NonioAPI: TargetType {
             return "tags"
         case .getComments:
             return "comments"
+        case .login:
+            return "user/login"
+        case .userInfo(let user):
+            return "users/\(user)"
         }
     }
     
     var method: Moya.Method {
         switch self {
-        case .getPosts, .getTags, .getComments:
+        case .getPosts, .getTags, .getComments, .userInfo:
             return .get
+        case .login:
+            return .post
         }
     }
     
@@ -40,8 +48,14 @@ extension NonioAPI: TargetType {
             )
         case .getComments(let id):
             return .requestParameters(parameters: ["post": id], encoding: URLEncoding.default)
-        case .getTags:
+        case .getTags, .userInfo:
             return .requestPlain
+        case .login(let user, let password):
+            let params = [
+                "email": user,
+                "password": password
+            ]
+            return .requestParameters(parameters: params, encoding: JSONEncoding.default)
         }
     }
     
@@ -53,9 +67,18 @@ extension NonioAPI: TargetType {
         return .successCodes
     }
     
+    var authorizationType: AuthorizationType? {
+        switch self {
+        case .userInfo:
+            return .bearer
+        default:
+            return nil
+        }
+    }
+    
     var sampleData: Data {
         switch self {
-        case .getPosts, .getTags, .getComments:
+        case .getPosts, .getTags, .getComments, .login, .userInfo:
             return Data()
         }
     }
