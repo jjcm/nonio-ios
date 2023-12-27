@@ -2,6 +2,7 @@ import SwiftUI
 import Combine
 
 struct PostsScreen: View {
+    @EnvironmentObject var settings: AppSettings
     @StateObject var viewModel: PostsViewModel
     @State private var showSortTimeframeActionSheet = false
     @State private var showSortActionSheet = false
@@ -37,6 +38,7 @@ struct PostsScreen: View {
                 }
                 .refreshable {
                     viewModel.fetch()
+                    viewModel.fetchVotes(hasLoggedIn: settings.hasLoggedIn)
                 }
                 .onChange(of: viewModel.displayTag, perform: { _ in
                     proxy.scrollTo(viewModel.posts.first?.ID)
@@ -44,19 +46,23 @@ struct PostsScreen: View {
                 .background(UIColor.secondarySystemBackground.color)
             }
         }
+        .onChange(of: settings.hasLoggedIn, perform: { hasLoggedIn in
+            viewModel.fetchVotes(hasLoggedIn: hasLoggedIn)
+        })
         .onAppear {
             viewModel.fetch()
+            viewModel.fetchVotes(hasLoggedIn: settings.hasLoggedIn)
         }
     }
     
     @ViewBuilder
     func rowItem(_ post: Post) -> some View {
         ZStack {
-            PostRowView(viewModel: .init(post: post), didTapPostLink: { post in
+            PostRowView(viewModel: .init(post: post), votes: viewModel.votes, didTapPostLink: { post in
                 viewModel.didTapPostLink(post: post)
             })
             NavigationLink {
-                PostDetailsScreen(viewModel: .init(post: post, provider: viewModel.provider))
+                PostDetailsScreen(viewModel: .init(post: post, votes: viewModel.votes, provider: viewModel.provider))
             } label: {
                 EmptyView()
             }

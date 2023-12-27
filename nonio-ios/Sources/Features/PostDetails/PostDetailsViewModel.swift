@@ -13,6 +13,7 @@ final class PostDetailsViewModel: ObservableObject {
     }
         
     let post: Post
+    let votes: [Vote]
     
     var title: String {
         post.title
@@ -68,8 +69,13 @@ final class PostDetailsViewModel: ObservableObject {
     private let provider: MoyaProvider<NonioAPI>
     private var cancellables: Set<AnyCancellable> = []
     
-    init(post: Post, provider: MoyaProvider<NonioAPI>) {
+    init(
+        post: Post,
+        votes: [Vote],
+        provider: MoyaProvider<NonioAPI>
+    ) {
         self.post = post
+        self.votes = votes
         self.provider = provider
     }
     

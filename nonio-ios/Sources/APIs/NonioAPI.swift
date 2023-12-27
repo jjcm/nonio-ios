@@ -8,6 +8,10 @@ enum NonioAPI {
     case getComments(id: String)
     case login(user: String, password: String)
     case userInfo(user: String)
+    case addVote(post: String, tag: String)
+    case removeVote(post: String, tag: String)
+    case getVotes
+    case getCommentVotes(post: String)
 }
 
 extension NonioAPI: TargetType, AccessTokenAuthorizable {
@@ -27,14 +31,22 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             return "user/login"
         case .userInfo(let user):
             return "users/\(user)"
+        case .addVote:
+            return "posttag/add-vote"
+        case .removeVote:
+            return "posttag/remove-vote"
+        case .getVotes:
+            return "votes"
+        case .getCommentVotes:
+            return "comment-votes"
         }
     }
     
     var method: Moya.Method {
         switch self {
-        case .getPosts, .getTags, .getComments, .userInfo:
+        case .getPosts, .getTags, .getComments, .userInfo, .getVotes, .getCommentVotes:
             return .get
-        case .login:
+        case .login, .addVote, .removeVote:
             return .post
         }
     }
@@ -48,7 +60,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             )
         case .getComments(let id):
             return .requestParameters(parameters: ["post": id], encoding: URLEncoding.default)
-        case .getTags, .userInfo:
+        case .getTags, .userInfo, .getVotes:
             return .requestPlain
         case .login(let user, let password):
             let params = [
@@ -56,6 +68,14 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
                 "password": password
             ]
             return .requestParameters(parameters: params, encoding: JSONEncoding.default)
+        case .addVote(let post, let tag), .removeVote(let post, let tag):
+            let params = [
+                "post": post,
+                "tag": tag
+            ]
+            return .requestParameters(parameters: params, encoding: JSONEncoding.default)
+        case .getCommentVotes(let post):
+            return .requestParameters(parameters: ["post": post], encoding: JSONEncoding.default)
         }
     }
     
@@ -69,7 +89,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
     
     var authorizationType: AuthorizationType? {
         switch self {
-        case .userInfo:
+        case .userInfo, .getVotes, .addVote, .removeVote, .getCommentVotes:
             return .bearer
         default:
             return nil
@@ -78,7 +98,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
     
     var sampleData: Data {
         switch self {
-        case .getPosts, .getTags, .getComments, .login, .userInfo:
+        case .getPosts, .getTags, .getComments, .login, .userInfo, .addVote, .removeVote, .getVotes, .getCommentVotes:
             return Data()
         }
     }

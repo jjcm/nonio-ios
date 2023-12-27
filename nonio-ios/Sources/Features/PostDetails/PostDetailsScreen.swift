@@ -103,10 +103,14 @@ struct PostDetailsScreen: View {
     }
     
     var tagsView: some View {
-        HorizontalTagsScrollView(tags: viewModel.post.tags)
-            .showIf(viewModel.shouldShowTags)
-            .padding(.horizontal, 16)
-            .padding(.bottom, 10)
+        HorizontalTagsScrollView(
+            post: viewModel.post.url,
+            tags: viewModel.post.tags,
+            votes: viewModel.votes
+        )
+        .padding(.horizontal, 16)
+        .padding(.bottom, 10)
+        .showIf(viewModel.shouldShowTags)
     }
     
     var commentsView: some View {

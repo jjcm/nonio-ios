@@ -88,5 +88,5 @@ struct PostTag: Codable {
     let postID: Int
     let tag: String
     let tagID: Int
-    let score: Int
+    var score: Int
 }
