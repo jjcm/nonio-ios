@@ -12,7 +12,7 @@ enum NonioAPI {
 
 extension NonioAPI: TargetType, AccessTokenAuthorizable {
     var baseURL: URL {
-        return URL(string: "https://api.non.io")!
+        return Configuration.API_HOST
     }
     
     var path: String {
