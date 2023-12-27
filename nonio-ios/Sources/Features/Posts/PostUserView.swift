@@ -2,11 +2,23 @@ import SwiftUI
 import Kingfisher
 
 struct PostUserView: View {
-    let viewModel: PostUserViewModel
+    
+    @EnvironmentObject var settings: AppSettings
+    @ObservedObject var viewModel: PostUserViewModel
+    @ObservedObject var commentVotesViewModel: CommentVotesViewModel
+    
     let isCollapsed: Bool
-    init(viewModel: PostUserViewModel, isCollapsed: Bool = false) {
+    let upvoteAction: (() -> Void)?
+    init(
+        viewModel: PostUserViewModel,
+        commentVotesViewModel: CommentVotesViewModel,
+        isCollapsed: Bool = false,
+        upvoteAction: (() -> Void)? = nil
+    ) {
         self.viewModel = viewModel
+        self.commentVotesViewModel = commentVotesViewModel
         self.isCollapsed = isCollapsed
+        self.upvoteAction = upvoteAction
     }
     
     var body: some View {
@@ -33,8 +45,21 @@ struct PostUserView: View {
             Spacer()
             
             HStack(spacing: 12) {
-                Text(viewModel.scoreString)
-                    .foregroundColor(.gray)
+                let voted = commentVotesViewModel.isCommentVoted(comment: viewModel.commentID)  == true
+                Button {
+                    upvoteAction?()
+                } label: {
+                    if settings.hasLoggedIn {
+                        Icon(image: R.image.upvote.image, size: .small)
+                            .foregroundStyle(voted ? Style.votedColor : Style.normalTextColor)
+                            .showIf(settings.hasLoggedIn && upvoteAction != nil)
+                    }
+                    if let upvotesString = viewModel.upvotesString {
+                        Text(upvotesString)
+                            .foregroundStyle(Style.normalTextColor)
+                    }
+                }
+                .disabled(upvoteAction == nil || voted)
                 
                 if let dateString = viewModel.dateString, !isCollapsed {
                     HStack(spacing: 4) {
@@ -58,5 +83,21 @@ struct PostUserView: View {
         }
         .font(.subheadline)
         .cornerRadius(10)
+    }
+}
+
+private extension PostUserView {
+    struct Style {
+        static let votedColor = Color.red
+        static let normalTextColor = Color.primary
+
+        static let bgColor = Color.dynamicColor(
+            light: Color(red: 0.96, green: 0.96, blue: 0.96),
+            dark: Color(red: 0.17, green: 0.17, blue: 0.18)
+        )
+        static let tagBGColor = Color.dynamicColor(
+            light:  Color(red: 0.9, green: 0.9, blue: 0.9),
+            dark: Color(red: 0.11, green: 0.11, blue: 0.12)
+        )
     }
 }

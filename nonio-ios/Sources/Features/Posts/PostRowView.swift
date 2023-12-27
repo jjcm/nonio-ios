@@ -47,7 +47,7 @@ struct PostRowView: View {
     }
     
     var userView: some View {
-        PostUserView(viewModel: .init(post: viewModel.post))
+        PostUserView(viewModel: .init(post: viewModel.post, showUpvoteCount: true), commentVotesViewModel: .init(post: viewModel.post))
             .padding(.horizontal, 16)
     }
     

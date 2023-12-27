@@ -11,6 +11,7 @@ enum NonioAPI {
     case addVote(post: String, tag: String)
     case removeVote(post: String, tag: String)
     case getVotes
+    case addCommentVote(commentID: Int, vote: Bool)
     case getCommentVotes(post: String)
 }
 
@@ -39,6 +40,8 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             return "votes"
         case .getCommentVotes:
             return "comment-votes"
+        case .addCommentVote:
+            return "comment/add-vote"
         }
     }
     
@@ -46,7 +49,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
         switch self {
         case .getPosts, .getTags, .getComments, .userInfo, .getVotes, .getCommentVotes:
             return .get
-        case .login, .addVote, .removeVote:
+        case .login, .addVote, .removeVote, .addCommentVote:
             return .post
         }
     }
@@ -75,7 +78,12 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             ]
             return .requestParameters(parameters: params, encoding: JSONEncoding.default)
         case .getCommentVotes(let post):
-            return .requestParameters(parameters: ["post": post], encoding: JSONEncoding.default)
+            return .requestParameters(parameters: ["post": post], encoding: URLEncoding.default)
+        case .addCommentVote(let commentID, let vote):
+            return .requestParameters(
+                parameters: ["id": commentID, "upvoted": vote],
+                encoding: JSONEncoding.default
+            )
         }
     }
     
@@ -89,7 +97,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
     
     var authorizationType: AuthorizationType? {
         switch self {
-        case .userInfo, .getVotes, .addVote, .removeVote, .getCommentVotes:
+        case .userInfo, .getVotes, .addVote, .removeVote, .getCommentVotes, .addCommentVote:
             return .bearer
         default:
             return nil
@@ -98,7 +106,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
     
     var sampleData: Data {
         switch self {
-        case .getPosts, .getTags, .getComments, .login, .userInfo, .addVote, .removeVote, .getVotes, .getCommentVotes:
+        default:
             return Data()
         }
     }

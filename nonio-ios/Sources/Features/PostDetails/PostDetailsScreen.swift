@@ -3,6 +3,7 @@ import Kingfisher
 
 
 struct PostDetailsScreen: View {
+    @EnvironmentObject var settings: AppSettings
     @ObservedObject var viewModel: PostDetailsViewModel
     @State private var openURLViewModel = ShowInAppBrowserViewModel()
     
@@ -16,6 +17,7 @@ struct PostDetailsScreen: View {
         }
         .onLoad {
             viewModel.onLoad()
+            viewModel.commentVotesViewModel.fetchCommentVotes(hasLoggedIn: settings.hasLoggedIn)
         }
     }
     
@@ -97,9 +99,16 @@ struct PostDetailsScreen: View {
     }
     
     var userView: some View {
-        PostUserView(viewModel: .init(post: viewModel.post))
-            .padding(.top, 10)
-            .padding(.horizontal, 16)
+        PostUserView(
+            viewModel: .init(
+                post: viewModel.post, 
+                showUpvoteCount: true
+            ),
+            commentVotesViewModel: viewModel.commentVotesViewModel
+        )
+        .padding(.top, 10)
+        .padding(.horizontal, 16)
+        .environmentObject(viewModel.commentVotesViewModel)
     }
     
     var tagsView: some View {
@@ -118,10 +127,13 @@ struct PostDetailsScreen: View {
             ForEach(viewModel.commentViewModels) { comment in
                 CommentView(
                     comment: comment,
+                    showUpvoteCount: true,
                     width: UIScreen.main.bounds.width - 2 * 16,
+                    commentVotesViewModel: viewModel.commentVotesViewModel,
                     didTapOnURL: openURLViewModel.handleURL(_:)
                 )
                 .padding(.horizontal, 16)
+                .environmentObject(viewModel.commentVotesViewModel)
             }
         }
     }

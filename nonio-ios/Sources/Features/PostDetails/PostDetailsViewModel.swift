@@ -7,6 +7,10 @@ final class PostDetailsViewModel: ObservableObject {
     
     @Published private(set) var loading: Bool = false
     @Published private(set) var commentViewModels: [CommentModel] = []
+    
+    private(set) lazy var commentVotesViewModel: CommentVotesViewModel = {
+        CommentVotesViewModel(post: post)
+    }()
 
     var postContent: [QuillViewRenderObject] {
         parser.parseQuillJS(json: post.content)
