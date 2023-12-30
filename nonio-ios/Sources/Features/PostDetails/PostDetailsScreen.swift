@@ -115,7 +115,8 @@ struct PostDetailsScreen: View {
         HorizontalTagsScrollView(
             post: viewModel.post.url,
             tags: viewModel.post.tags,
-            votes: viewModel.votes
+            votes: viewModel.votes,
+            style: .init(height: 28, textColor: .blue)
         )
         .padding(.horizontal, 16)
         .padding(.bottom, 10)

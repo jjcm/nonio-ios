@@ -55,7 +55,8 @@ struct PostRowView: View {
         HorizontalTagsScrollView(
             post: viewModel.post.url,
             tags: viewModel.post.tags,
-            votes: votes
+            votes: votes,
+            style: .init(height: 24, textColor: .secondary)
         )
         .padding(.horizontal, 16)
         .showIf(viewModel.shouldShowTags)

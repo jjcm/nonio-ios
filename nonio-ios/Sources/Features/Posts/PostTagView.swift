@@ -1,16 +1,21 @@
 import SwiftUI
 
-import SwiftUI
-
 private struct PostTagView: View {
     @EnvironmentObject var settings: AppSettings
 
     let tag: PostTag
     let voted: Bool
+    let textColor: Color
     let toggleVoteAction: (() -> Void)
-    init(tag: PostTag, voted: Bool, toggleVoteAction: @escaping () -> Void) {
+    init(
+        tag: PostTag,
+        voted: Bool,
+        textColor: Color,
+        toggleVoteAction: @escaping () -> Void
+    ) {
         self.tag = tag
         self.voted = voted
+        self.textColor = textColor
         self.toggleVoteAction = toggleVoteAction
     }
     
@@ -34,14 +39,14 @@ private struct PostTagView: View {
             Text(tag.tag)
                 .font(.caption)
                 .fontWeight(.semibold)
-                .foregroundStyle(.secondary)
-                .padding(6)
-                .background(Style.tagBGColor)
+                .foregroundStyle(textColor)
+                .padding(.horizontal, 8)
                 .cornerRadius(2)
+                .frame(maxHeight: .infinity)
+                .background(Style.tagBGColor)
         }
-        .padding(2)
         .background(Style.bgColor)
-        .cornerRadius(2)
+        .cornerRadius(8)
     }
 }
 
@@ -63,19 +68,29 @@ private extension PostTagView {
     }
 }
 
+extension HorizontalTagsScrollView {
+    struct Style {
+        let height: CGFloat
+        let textColor: Color
+    }
+}
+
 struct HorizontalTagsScrollView: View {
     @ObservedObject var viewModel: PostTagViewModel
-    init(post: String, tags: [PostTag], votes: [Vote]) {
+    let style: Style
+    init(post: String, tags: [PostTag], votes: [Vote], style: Style) {
         self.viewModel = PostTagViewModel(post: post, tags: tags, votes: votes)
+        self.style = style
     }
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack {
                 ForEach(viewModel.tags, id: \.tagID) { tag in
                     let voted = viewModel.isVoted(tag: tag)
-                    PostTagView(tag: tag, voted: voted) {
+                    PostTagView(tag: tag, voted: voted, textColor: style.textColor) {
                         viewModel.toggleVote(tag: tag, vote: !voted)
                     }
+                    .frame(height: style.height)
                 }
             }
         }
