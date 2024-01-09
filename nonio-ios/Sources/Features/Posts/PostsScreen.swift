@@ -49,7 +49,7 @@ struct PostsScreen: View {
         .onChange(of: settings.hasLoggedIn, perform: { hasLoggedIn in
             viewModel.fetchVotes(hasLoggedIn: hasLoggedIn)
         })
-        .onAppear {
+        .onLoad {
             viewModel.fetch()
             viewModel.fetchVotes(hasLoggedIn: settings.hasLoggedIn)
         }
