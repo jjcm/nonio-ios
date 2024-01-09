@@ -2,14 +2,36 @@ import Foundation
 import Moya
 import Combine
 
+enum UserViewParamType {
+    /// Logined in user
+    case login(LoginResponse)
+    
+    /// User id
+    case user(String)
+    
+    var username: String {
+        switch self {
+        case .login(let loginResponse): return loginResponse.username
+        case .user(let user): return user
+        }
+    }
+}
+
 final class UserViewModel: ObservableObject {
     @Published private(set) var loading = false
     @Published private(set) var posts: String = ""
     @Published private(set) var postKarma: String = ""
     @Published private(set) var comments: String = ""
     @Published private(set) var commentKarma: String = ""
+    
+    var showLogoutButton: Bool {
+        switch param {
+        case .login: return true
+        case .user: return false
+        }
+    }
 
-    let user: LoginResponse
+    let param: UserViewParamType
     
     private let keychainService: KeychainServiceType
     private let provider = MoyaProvider.defaultProvider
@@ -17,10 +39,10 @@ final class UserViewModel: ObservableObject {
     private var cancellables: Set<AnyCancellable> = []
     
     init(
-        user: LoginResponse,
+        param: UserViewParamType,
         keychainService: KeychainServiceType = KeychainService()
     ) {
-        self.user = user
+        self.param = param
         self.keychainService = keychainService
     }
     
@@ -32,7 +54,7 @@ final class UserViewModel: ObservableObject {
         guard !loading else { return }
         
         loading = true
-        provider.requestPublisher(.userInfo(user: user.username))
+        provider.requestPublisher(.userInfo(user: param.username))
             .map(UserInfo.self)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { completion in

@@ -72,7 +72,7 @@ struct MainView: View {
     
     @ViewBuilder
     func userTab(user: LoginResponse) -> some View {
-        UserScreen(user: user)
+        UserScreen(param: .login(user))
             .tabItem {
 //                userAvatar(user: user.username)
                 Icon(image: R.image.tabsUser.image, size: .small)

@@ -8,38 +8,46 @@ struct PostUserView: View {
     @ObservedObject var commentVotesViewModel: CommentVotesViewModel
     
     let isCollapsed: Bool
+    let didTapUserProfileAction: (() -> Void)
     let upvoteAction: (() -> Void)?
     init(
         viewModel: PostUserViewModel,
         commentVotesViewModel: CommentVotesViewModel,
         isCollapsed: Bool = false,
+        didTapUserProfileAction: @escaping (() -> Void),
         upvoteAction: (() -> Void)? = nil
     ) {
         self.viewModel = viewModel
         self.commentVotesViewModel = commentVotesViewModel
         self.isCollapsed = isCollapsed
+        self.didTapUserProfileAction = didTapUserProfileAction
         self.upvoteAction = upvoteAction
     }
     
     var body: some View {
         HStack {
-            HStack(spacing: 8) {
-                KFImage(ImageURLGenerator.userAvatarURL(user: viewModel.user))
-                    .placeholder {
-                        Image(systemName: "person.circle.fill")
-                            .resizable()
-                            .renderingMode(.template)
-                            .frame(width: 16, height: 16)
-                            .foregroundStyle(.primary)
-                    }
-                    .resizable()
-                    .frame(width: 16, height: 16)
-                    .clipShape(Circle())
-                    .layoutPriority(1)
-                
-                Text(viewModel.user)
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
+            Button {
+                didTapUserProfileAction()
+            } label: {
+                HStack(spacing: 8) {
+                    
+                    KFImage(ImageURLGenerator.userAvatarURL(user: viewModel.user))
+                        .placeholder {
+                            Image(systemName: "person.circle.fill")
+                                .resizable()
+                                .renderingMode(.template)
+                                .frame(width: 16, height: 16)
+                                .foregroundStyle(.primary)
+                        }
+                        .resizable()
+                        .frame(width: 16, height: 16)
+                        .clipShape(Circle())
+                        .layoutPriority(1)
+                    
+                    Text(viewModel.user)
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+                }
             }
             
             Spacer()

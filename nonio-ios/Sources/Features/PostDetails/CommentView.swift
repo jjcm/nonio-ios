@@ -7,18 +7,22 @@ struct CommentView: View {
     let showUpvoteCount: Bool
     let width: CGFloat
     let didTapOnURL: ((URL) -> Void)?
+    let didTapUserProfileAction: ((String) -> Void)
+    
     init(
         comment: CommentModel,
         showUpvoteCount: Bool,
         width: CGFloat,
         commentVotesViewModel: CommentVotesViewModel,
-        didTapOnURL: ((URL) -> Void)?
+        didTapOnURL: ((URL) -> Void)?,
+        didTapUserProfileAction: @escaping ((String) -> Void)
     ) {
         self.comment = comment
         self.width = width
         self.commentVotesViewModel = commentVotesViewModel
         self.didTapOnURL = didTapOnURL
         self.showUpvoteCount = showUpvoteCount
+        self.didTapUserProfileAction = didTapUserProfileAction
     }
 
     var body: some View {
@@ -48,7 +52,8 @@ struct CommentView: View {
                         showUpvoteCount: showUpvoteCount,
                         width: width - Layout.levelIndent,
                         commentVotesViewModel: commentVotesViewModel,
-                        didTapOnURL: didTapOnURL
+                        didTapOnURL: didTapOnURL,
+                        didTapUserProfileAction: didTapUserProfileAction
                     )
                     .padding(.leading, Layout.levelIndent)
                 }
@@ -66,7 +71,10 @@ struct CommentView: View {
                 showUpvoteCount: showUpvoteCount
             ), 
             commentVotesViewModel: commentVotesViewModel,
-            isCollapsed: comment.isCollapsed
+            isCollapsed: comment.isCollapsed,
+            didTapUserProfileAction: {
+                didTapUserProfileAction(comment.comment.user)
+            }
         ) {
             commentVotesViewModel.voteComment(comment: comment, vote: true)
         }

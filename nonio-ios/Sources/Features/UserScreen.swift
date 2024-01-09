@@ -3,9 +3,9 @@ import Kingfisher
 
 struct UserScreen: View {
     @EnvironmentObject var settings: AppSettings
-    @StateObject var viewModel: UserViewModel
-    init(user: LoginResponse) {
-        self._viewModel = StateObject(wrappedValue: UserViewModel(user: user))
+    @ObservedObject var viewModel: UserViewModel
+    init(param: UserViewParamType) {
+        viewModel = UserViewModel(param: param)
     }
     
     var body: some View {
@@ -44,6 +44,7 @@ struct UserScreen: View {
                 .padding(.horizontal)
                 .padding(.top, 24)
                 .plainListItem()
+                .showIf(viewModel.showLogoutButton)
             }
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -155,7 +156,7 @@ struct UserScreen: View {
     
     var avatarView: some View {
         VStack(alignment: .center, spacing: 10) {
-            KFImage(ImageURLGenerator.userAvatarURL(user: viewModel.user.username))
+            KFImage(ImageURLGenerator.userAvatarURL(user: viewModel.param.username))
                 .placeholder {
                     Icon(image: R.image.tabsUser.image, size: .small)
                 }
@@ -163,7 +164,7 @@ struct UserScreen: View {
                 .frame(width: 62, height: 62)
                 .clipShape(Circle())
             
-            Text(viewModel.user.username)
+            Text(viewModel.param.username)
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundStyle(.primary)
@@ -174,5 +175,5 @@ struct UserScreen: View {
 }
 
 #Preview {
-    UserScreen(user: .init(token: "", username: "Tom"))
+    UserScreen(param: .user("tom"))
 }

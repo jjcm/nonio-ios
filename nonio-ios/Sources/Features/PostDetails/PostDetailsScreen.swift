@@ -6,13 +6,27 @@ struct PostDetailsScreen: View {
     @EnvironmentObject var settings: AppSettings
     @ObservedObject var viewModel: PostDetailsViewModel
     @State private var openURLViewModel = ShowInAppBrowserViewModel()
-    
+    @State private var selectedUser: String?
+
     var body: some View {
-        VStack {
-            if viewModel.loading {
-                ProgressView()
-            } else {
-                content
+        NavigationStack {
+            VStack {
+                if viewModel.loading {
+                    ProgressView()
+                } else {
+                    content
+                }
+            }
+            .navigationTitle("Posts")
+            .navigationDestination(for: $selectedUser) { user in
+                UserScreen(param: .user(user))
+            }
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(viewModel.title)
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                }
             }
         }
         .onLoad {
@@ -42,7 +56,6 @@ struct PostDetailsScreen: View {
                 }
             }
         }
-        
         .openURL(viewModel: openURLViewModel)
         .padding(.vertical, 10)
         .background(UIColor.systemBackground.color)
@@ -101,10 +114,13 @@ struct PostDetailsScreen: View {
     var userView: some View {
         PostUserView(
             viewModel: .init(
-                post: viewModel.post, 
+                post: viewModel.post,
                 showUpvoteCount: true
             ),
-            commentVotesViewModel: viewModel.commentVotesViewModel
+            commentVotesViewModel: viewModel.commentVotesViewModel,
+            didTapUserProfileAction: {
+                didTapUserProfile(user: viewModel.post.user)
+            }
         )
         .padding(.top, 10)
         .padding(.horizontal, 16)
@@ -131,11 +147,18 @@ struct PostDetailsScreen: View {
                     showUpvoteCount: true,
                     width: UIScreen.main.bounds.width - 2 * 16,
                     commentVotesViewModel: viewModel.commentVotesViewModel,
-                    didTapOnURL: openURLViewModel.handleURL(_:)
+                    didTapOnURL: openURLViewModel.handleURL(_:),
+                    didTapUserProfileAction: { user in
+                        didTapUserProfile(user: user)
+                    }
                 )
                 .padding(.horizontal, 16)
                 .environmentObject(viewModel.commentVotesViewModel)
             }
         }
+    }
+    
+    private func didTapUserProfile(user: String) {
+        selectedUser = user
     }
 }

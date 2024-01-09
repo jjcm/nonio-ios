@@ -6,6 +6,8 @@ struct PostsScreen: View {
     @StateObject var viewModel: PostsViewModel
     @State private var showSortTimeframeActionSheet = false
     @State private var showSortActionSheet = false
+    @State private var selectedUser: String?
+    @State private var selectedPost: Post?
     
     var body: some View {
         ZStack {
@@ -44,6 +46,18 @@ struct PostsScreen: View {
                     proxy.scrollTo(viewModel.posts.first?.ID)
                 })
                 .background(UIColor.secondarySystemBackground.color)
+                .navigationDestination(for: $selectedUser) { user in
+                    UserScreen(param: .user(user))
+                }
+                .navigationDestination(for: $selectedPost) { post in
+                    PostDetailsScreen(
+                        viewModel: .init(
+                            post: post,
+                            votes: viewModel.votes,
+                            provider: viewModel.provider
+                        )
+                    )
+                }
             }
         }
         .onChange(of: settings.hasLoggedIn, perform: { hasLoggedIn in
@@ -57,16 +71,19 @@ struct PostsScreen: View {
     
     @ViewBuilder
     func rowItem(_ post: Post) -> some View {
-        ZStack {
-            PostRowView(viewModel: .init(post: post), votes: viewModel.votes, didTapPostLink: { post in
-                viewModel.didTapPostLink(post: post)
-            })
-            NavigationLink {
-                PostDetailsScreen(viewModel: .init(post: post, votes: viewModel.votes, provider: viewModel.provider))
-            } label: {
-                EmptyView()
-            }
-            .opacity(0) // hide navigation link arrow
+        Button {
+            selectedPost = post
+        } label: {
+            PostRowView(
+                viewModel: .init(post: post),
+                votes: viewModel.votes,
+                didTapUserProfileAction: {
+                    selectedUser = post.user
+                },
+                didTapPostLink: {
+                    post in
+                    viewModel.didTapPostLink(post: post)
+                })
         }
         .plainListItem()
     }
