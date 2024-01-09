@@ -39,4 +39,14 @@ final class PostsViewModelTests: XCTestCase {
         vm.onSelectTimeframe(day)
         XCTAssertEqual(vm.getPostParams.time, day)
     }
+    
+    func testTitle() {
+        let vm = PostsViewModel()
+        XCTAssertEqual(vm.title, "#ALL")
+    }
+    
+    func testUserTitle() {
+        let vm = PostsViewModel(user: "user_a")
+        XCTAssertEqual(vm.title, "Posts")
+    }
 }

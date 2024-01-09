@@ -17,10 +17,10 @@ struct PostDetailsScreen: View {
                     content
                 }
             }
-            .navigationTitle("Posts")
             .navigationDestination(for: $selectedUser) { user in
                 UserScreen(param: .user(user))
             }
+            .navigationTitle("Posts")
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text(viewModel.title)

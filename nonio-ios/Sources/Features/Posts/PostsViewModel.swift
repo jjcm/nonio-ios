@@ -14,16 +14,34 @@ class PostsViewModel: ObservableObject {
         }
     }
     @Published private(set) var tagsViewModel = TagsViewModel()
+    var isUserPosts: Bool {
+        user != nil
+    }
+    
+    var title: String {
+        user == nil ? displayTag : "Posts"
+    }
     var displayTag: String {
         "#\(currentTag.tag.uppercased())"
     }
     private(set) var getPostParams: GetPostParams = .all
     private var cancellables: Set<AnyCancellable> = []
     let provider = MoyaProvider.defaultProvider
+    let user: String?
+    
+    init(user: String? = nil) {
+        self.user = user
+    }
     
     func fetch() {
         loading = true
-        provider.requestPublisher(.getPosts(getPostParams))
+        let params: RequestParamsType
+        if let user {
+            params = GetUserPostParams(user: user)
+        } else {
+            params = getPostParams
+        }
+        provider.requestPublisher(.getPosts(params))
             .map([Post].self, atKeyPath: "posts")
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { completion in

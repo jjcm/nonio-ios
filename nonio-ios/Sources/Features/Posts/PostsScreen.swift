@@ -49,6 +49,7 @@ struct PostsScreen: View {
                 .navigationDestination(for: $selectedUser) { user in
                     UserScreen(param: .user(user))
                 }
+                .navigationTitle(viewModel.title)
                 .navigationDestination(for: $selectedPost) { post in
                     PostDetailsScreen(
                         viewModel: .init(
@@ -90,19 +91,21 @@ struct PostsScreen: View {
     
     @ToolbarContentBuilder
     func toolbarItems() -> some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            NavigationLink(destination: TagsScreen(viewModel: viewModel.tagsViewModel) { tag in
-                self.viewModel.onSelectTag(tag)
-            } didSelectAll: {
-                self.viewModel.onSelectAllPosts()
-            }, label: {
-                Icon(image: R.image.tag.image, size: .medium)
-            })
-            .navigationTitle("Posts")
+        if !viewModel.isUserPosts {
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationLink(destination: TagsScreen(viewModel: viewModel.tagsViewModel) { tag in
+                    self.viewModel.onSelectTag(tag)
+                } didSelectAll: {
+                    self.viewModel.onSelectAllPosts()
+                }, label: {
+                    Icon(image: R.image.tag.image, size: .medium)
+                })
+                .navigationTitle("Posts")
+            }
         }
         
         ToolbarItem(placement: .principal) {
-            Text(viewModel.displayTag)
+            Text(viewModel.title)
                 .font(.headline)
                 .foregroundColor(.secondary)
         }

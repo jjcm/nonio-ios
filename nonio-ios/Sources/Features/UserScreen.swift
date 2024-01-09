@@ -2,8 +2,16 @@ import SwiftUI
 import Kingfisher
 
 struct UserScreen: View {
+    
+    enum Route {
+        case posts
+        case comments
+    }
+    
     @EnvironmentObject var settings: AppSettings
     @ObservedObject var viewModel: UserViewModel
+    @State private var selectedRoute: Route?
+
     init(param: UserViewParamType) {
         viewModel = UserViewModel(param: param)
     }
@@ -46,6 +54,15 @@ struct UserScreen: View {
                 .plainListItem()
                 .showIf(viewModel.showLogoutButton)
             }
+            .navigationDestination(for: $selectedRoute, destination: { route in
+                switch route {
+                case .comments:
+                    EmptyView()
+                case .posts:
+                    PostsScreen(viewModel: .init(user: viewModel.param.username))
+                }
+            })
+            .navigationTitle(viewModel.param.username)
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("Account")
@@ -81,7 +98,9 @@ struct UserScreen: View {
                     value: viewModel.posts,
                     icon: R.image.postBlue.image,
                     showIndicator: true
-                )
+                ) {
+                    selectedRoute = .posts
+                }
                 
                 Divider()
                     .padding(.leading)
@@ -90,7 +109,7 @@ struct UserScreen: View {
                     title: "Comments",
                     value: viewModel.comments,
                     icon: R.image.commentBlue.image,
-                    showIndicator: true
+                    showIndicator: false
                 )
             }
             .background(UIColor.secondarySystemBackground.color)
@@ -134,24 +153,34 @@ struct UserScreen: View {
         .plainListItem()
     }
     
-    func row(title: String, value: String, icon: Image, showIndicator: Bool) -> some View {
-        HStack {
-            icon
-                       
-            Text(title)
-                .padding(.leading, 16)
-            
-            Spacer()
-            
-            Text(value)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            
-            Icon(image: R.image.chevronRight.image, size: .big)
-                .showIf(showIndicator)
+    func row(
+        title: String,
+        value: String,
+        icon: Image,
+        showIndicator: Bool,
+        onTap: @escaping (() -> Void) = {}
+    ) -> some View {
+        Button {
+            onTap()
+        } label: {
+            HStack {
+                icon
+                           
+                Text(title)
+                    .padding(.leading, 16)
+                
+                Spacer()
+                
+                Text(value)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                
+                Icon(image: R.image.chevronRight.image, size: .big)
+                    .showIf(showIndicator)
+            }
+            .frame(height: 44)
+            .padding(.horizontal, 16)
         }
-        .frame(height: 44)
-        .padding(.horizontal, 16)
     }
     
     var avatarView: some View {
