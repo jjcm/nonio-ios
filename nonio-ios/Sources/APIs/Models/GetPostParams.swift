@@ -38,5 +38,5 @@ extension GetPostParams {
         return params.compactMapValues { $0 }
     }
     
-    static let all =  GetPostParams(tag: "all", sort: .top, time: .week)
+    static let all =  GetPostParams(tag: "all", sort: .top, time: nil)
 }

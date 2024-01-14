@@ -6,6 +6,7 @@ import UIKit
 
 class PostsViewModel: ObservableObject {
     @Published private(set) var posts: [Post] = []
+    @Published private(set) var votes: [Vote] = []
     @Published private(set) var loading = true
     @Published private(set) var currentTag: Tag = .all {
         didSet {
@@ -18,7 +19,7 @@ class PostsViewModel: ObservableObject {
     }
     private(set) var getPostParams: GetPostParams = .all
     private var cancellables: Set<AnyCancellable> = []
-    let provider = MoyaProvider<NonioAPI>(plugins: [NetworkLoggerPlugin()])
+    let provider = MoyaProvider.defaultProvider
     
     func fetch() {
         loading = true
@@ -66,5 +67,21 @@ class PostsViewModel: ObservableObject {
             return
         }
         UIApplication.shared.open(url, completionHandler: nil)
+    }
+    
+    func fetchVotes(hasLoggedIn: Bool) {
+        if !hasLoggedIn {
+            votes = []
+            return
+        }
+        
+        provider.requestPublisher(.getVotes)
+            .map([Vote].self, atKeyPath: "votes")
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in
+            }, receiveValue: { votes in
+                self.votes = votes
+            })
+            .store(in: &cancellables)
     }
 }

@@ -1,35 +1,98 @@
 import SwiftUI
 
-import SwiftUI
-
 private struct PostTagView: View {
-    
-    var tag: PostTag
+    @EnvironmentObject var settings: AppSettings
+
+    let tag: PostTag
+    let voted: Bool
+    let textColor: Color
+    let toggleVoteAction: (() -> Void)
+    init(
+        tag: PostTag,
+        voted: Bool,
+        textColor: Color,
+        toggleVoteAction: @escaping () -> Void
+    ) {
+        self.tag = tag
+        self.voted = voted
+        self.textColor = textColor
+        self.toggleVoteAction = toggleVoteAction
+    }
     
     var body: some View {
-        Text(tag.tag)
-            .font(.caption)
-            .fontWeight(.semibold)
+        HStack {
+            Button {
+                toggleVoteAction()
+            } label: {
+                if settings.hasLoggedIn {
+                    Icon(image: R.image.upvote.image, size: .small)
+                        .tint(voted ? Style.votedColor : Style.normalTextColor)
+                }
+                Text("\(tag.score)")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(voted ? Style.votedColor : Style.normalTextColor)
+            }
             .padding(6)
-            .foregroundColor(.blue)
-            .background(UIColor.systemGray6.color)
-            .cornerRadius(4)
+            .showIf(tag.score > 0)
+            
+            Text(tag.tag)
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(textColor)
+                .padding(.horizontal, 8)
+                .cornerRadius(2)
+                .frame(maxHeight: .infinity)
+                .background(Style.tagBGColor)
+        }
+        .background(Style.bgColor)
+        .cornerRadius(8)
+    }
+}
+
+private extension PostTagView {
+    struct Style {
+        static let votedColor = Color.red
+        static let normalTextColor = Color.dynamicColor(
+            light: Color(red: 0.1, green: 0.1, blue: 0.1),
+            dark: Color(red: 0.92, green: 0.92, blue: 0.96).opacity(0.6)
+        )
+        static let bgColor = Color.dynamicColor(
+            light: Color(red: 0.96, green: 0.96, blue: 0.96),
+            dark: Color(red: 0.17, green: 0.17, blue: 0.18)
+        )
+        static let tagBGColor = Color.dynamicColor(
+            light:  Color(red: 0.9, green: 0.9, blue: 0.9),
+            dark: Color(red: 0.11, green: 0.11, blue: 0.12)
+        )
+    }
+}
+
+extension HorizontalTagsScrollView {
+    struct Style {
+        let height: CGFloat
+        let textColor: Color
     }
 }
 
 struct HorizontalTagsScrollView: View {
-    var tags: [PostTag]
+    @ObservedObject var viewModel: PostTagViewModel
+    let style: Style
+    init(post: String, tags: [PostTag], votes: [Vote], style: Style) {
+        self.viewModel = PostTagViewModel(post: post, tags: tags, votes: votes)
+        self.style = style
+    }
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack {
-                ForEach(tags, id: \.tagID) { tag in
-                    PostTagView(tag: tag)
+                ForEach(viewModel.tags, id: \.tagID) { tag in
+                    let voted = viewModel.isVoted(tag: tag)
+                    PostTagView(tag: tag, voted: voted, textColor: style.textColor) {
+                        viewModel.toggleVote(tag: tag, vote: !voted)
+                    }
+                    .frame(height: style.height)
                 }
             }
         }
     }
-}
-
-#Preview {
-    HorizontalTagsScrollView(tags: [.init(postID: 1, tag: "funnyhahah", tagID: 2, score: 100), .init(postID: 2, tag: "tag22222", tagID: 3, score: 5), .init(postID: 1, tag: "longlonglonglonglonglonglonglonglong", tagID: 4, score: 0)])
 }

@@ -7,12 +7,17 @@ final class PostDetailsViewModel: ObservableObject {
     
     @Published private(set) var loading: Bool = false
     @Published private(set) var commentViewModels: [CommentModel] = []
+    
+    private(set) lazy var commentVotesViewModel: CommentVotesViewModel = {
+        CommentVotesViewModel(post: post)
+    }()
 
     var postContent: [QuillViewRenderObject] {
         parser.parseQuillJS(json: post.content)
     }
         
     let post: Post
+    let votes: [Vote]
     
     var title: String {
         post.title
@@ -68,8 +73,13 @@ final class PostDetailsViewModel: ObservableObject {
     private let provider: MoyaProvider<NonioAPI>
     private var cancellables: Set<AnyCancellable> = []
     
-    init(post: Post, provider: MoyaProvider<NonioAPI>) {
+    init(
+        post: Post,
+        votes: [Vote],
+        provider: MoyaProvider<NonioAPI>
+    ) {
         self.post = post
+        self.votes = votes
         self.provider = provider
     }
     

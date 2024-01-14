@@ -3,7 +3,8 @@ import Kingfisher
 
 struct PostRowView: View {
     let viewModel: PostViewModel
-    var didTapPostLink: ((Post) -> Void)?
+    let votes: [Vote]
+    let didTapPostLink: ((Post) -> Void)?
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -46,14 +47,19 @@ struct PostRowView: View {
     }
     
     var userView: some View {
-        PostUserView(viewModel: .init(post: viewModel.post))
+        PostUserView(viewModel: .init(post: viewModel.post, showUpvoteCount: true), commentVotesViewModel: .init(post: viewModel.post))
             .padding(.horizontal, 16)
     }
     
     var tagsView: some View {
-        HorizontalTagsScrollView(tags: viewModel.post.tags)
-            .showIf(viewModel.shouldShowTags)
-            .padding(.horizontal, 16)
+        HorizontalTagsScrollView(
+            post: viewModel.post.url,
+            tags: viewModel.post.tags,
+            votes: votes,
+            style: .init(height: 24, textColor: .secondary)
+        )
+        .padding(.horizontal, 16)
+        .showIf(viewModel.shouldShowTags)
     }
 }
 
@@ -72,32 +78,4 @@ struct TagsView: View {
             }
         }
     }
-}
-
-#Preview {
-    PostRowView(
-        viewModel: .init(
-            post:
-                Post(
-                    id: 2,
-                    title: "test post",
-                    user: "jjcm",
-                    time: 1699151931000,
-                    url: "avo-coffeeshop",
-                    link: URL(string: "https://www.google.com"),
-                    type: .image,
-                    content: "",
-                    score: 148,
-                    commentCount: 21,
-                    width: 100,
-                    height: 100,
-                    tags: [
-                        .init(postID: 1, tag: "hahahahahah", tagID: 1, score: 5),
-                        .init(postID: 1, tag: "hahahahahah", tagID: 2, score: 5),
-                        .init(postID: 1, tag: "hahahahahah", tagID: 3, score: 5),
-                        .init(postID: 1, tag: "hahahahahah", tagID: 1, score: 5),
-                    ]
-                )
-        )
-    )
 }

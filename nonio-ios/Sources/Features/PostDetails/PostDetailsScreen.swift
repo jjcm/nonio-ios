@@ -3,6 +3,7 @@ import Kingfisher
 
 
 struct PostDetailsScreen: View {
+    @EnvironmentObject var settings: AppSettings
     @ObservedObject var viewModel: PostDetailsViewModel
     @State private var openURLViewModel = ShowInAppBrowserViewModel()
     
@@ -16,6 +17,7 @@ struct PostDetailsScreen: View {
         }
         .onLoad {
             viewModel.onLoad()
+            viewModel.commentVotesViewModel.fetchCommentVotes(hasLoggedIn: settings.hasLoggedIn)
         }
     }
     
@@ -97,16 +99,28 @@ struct PostDetailsScreen: View {
     }
     
     var userView: some View {
-        PostUserView(viewModel: .init(post: viewModel.post))
-            .padding(.top, 10)
-            .padding(.horizontal, 16)
+        PostUserView(
+            viewModel: .init(
+                post: viewModel.post, 
+                showUpvoteCount: true
+            ),
+            commentVotesViewModel: viewModel.commentVotesViewModel
+        )
+        .padding(.top, 10)
+        .padding(.horizontal, 16)
+        .environmentObject(viewModel.commentVotesViewModel)
     }
     
     var tagsView: some View {
-        HorizontalTagsScrollView(tags: viewModel.post.tags)
-            .showIf(viewModel.shouldShowTags)
-            .padding(.horizontal, 16)
-            .padding(.bottom, 10)
+        HorizontalTagsScrollView(
+            post: viewModel.post.url,
+            tags: viewModel.post.tags,
+            votes: viewModel.votes,
+            style: .init(height: 28, textColor: .blue)
+        )
+        .padding(.horizontal, 16)
+        .padding(.bottom, 10)
+        .showIf(viewModel.shouldShowTags)
     }
     
     var commentsView: some View {
@@ -114,10 +128,13 @@ struct PostDetailsScreen: View {
             ForEach(viewModel.commentViewModels) { comment in
                 CommentView(
                     comment: comment,
+                    showUpvoteCount: true,
                     width: UIScreen.main.bounds.width - 2 * 16,
+                    commentVotesViewModel: viewModel.commentVotesViewModel,
                     didTapOnURL: openURLViewModel.handleURL(_:)
                 )
                 .padding(.horizontal, 16)
+                .environmentObject(viewModel.commentVotesViewModel)
             }
         }
     }
