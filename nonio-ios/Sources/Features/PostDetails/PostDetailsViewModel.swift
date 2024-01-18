@@ -20,7 +20,7 @@ final class PostDetailsViewModel: ObservableObject {
     let votes: [Vote]
     
     var title: String {
-        post.title
+        "\(post.commentCount) \(post.commentCount > 1 ? "Comments" : "Comment")"
     }
     
     var imageURL: URL? {

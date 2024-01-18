@@ -47,7 +47,6 @@ struct QuillParser {
         currentIndentMap: inout [Int: Int],
         blockquote: inout Bool
     ) -> QuillViewRenderObject {
-        debugPrint("parse lines: \(lines)")
         var lines = lines
         var result = AttributedString()
                 

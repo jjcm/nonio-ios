@@ -1,5 +1,17 @@
 import Foundation
 
+protocol RequestParamsType {
+    var toRequestParams: [String: Any] { get }
+}
+
+struct GetUserPostParams: RequestParamsType {
+    var user: String
+    
+    var toRequestParams: [String : Any] {
+        ["user": user]
+    }
+}
+
 struct GetPostParams: Equatable {
     
     enum Sort: String, CaseIterable {
@@ -28,7 +40,7 @@ struct GetPostParams: Equatable {
     }
 }
 
-extension GetPostParams {
+extension GetPostParams: RequestParamsType {
     var toRequestParams: [String: Any] {
         let params =  [
             "tag": tag,

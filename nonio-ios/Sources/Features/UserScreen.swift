@@ -2,10 +2,18 @@ import SwiftUI
 import Kingfisher
 
 struct UserScreen: View {
+    
+    enum Route {
+        case posts
+        case comments
+    }
+    
     @EnvironmentObject var settings: AppSettings
-    @StateObject var viewModel: UserViewModel
-    init(user: LoginResponse) {
-        self._viewModel = StateObject(wrappedValue: UserViewModel(user: user))
+    @ObservedObject var viewModel: UserViewModel
+    @State private var selectedRoute: Route?
+
+    init(param: UserViewParamType) {
+        viewModel = UserViewModel(param: param)
     }
     
     var body: some View {
@@ -44,7 +52,17 @@ struct UserScreen: View {
                 .padding(.horizontal)
                 .padding(.top, 24)
                 .plainListItem()
+                .showIf(viewModel.showLogoutButton)
             }
+            .navigationDestination(for: $selectedRoute, destination: { route in
+                switch route {
+                case .comments:
+                    EmptyView()
+                case .posts:
+                    PostsScreen(viewModel: .init(user: viewModel.param.username))
+                }
+            })
+            .navigationTitle(viewModel.param.username)
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("Account")
@@ -80,7 +98,9 @@ struct UserScreen: View {
                     value: viewModel.posts,
                     icon: R.image.postBlue.image,
                     showIndicator: true
-                )
+                ) {
+                    selectedRoute = .posts
+                }
                 
                 Divider()
                     .padding(.leading)
@@ -89,7 +109,7 @@ struct UserScreen: View {
                     title: "Comments",
                     value: viewModel.comments,
                     icon: R.image.commentBlue.image,
-                    showIndicator: true
+                    showIndicator: false
                 )
             }
             .background(UIColor.secondarySystemBackground.color)
@@ -133,29 +153,39 @@ struct UserScreen: View {
         .plainListItem()
     }
     
-    func row(title: String, value: String, icon: Image, showIndicator: Bool) -> some View {
-        HStack {
-            icon
-                       
-            Text(title)
-                .padding(.leading, 16)
-            
-            Spacer()
-            
-            Text(value)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            
-            Icon(image: R.image.chevronRight.image, size: .big)
-                .showIf(showIndicator)
+    func row(
+        title: String,
+        value: String,
+        icon: Image,
+        showIndicator: Bool,
+        onTap: @escaping (() -> Void) = {}
+    ) -> some View {
+        Button {
+            onTap()
+        } label: {
+            HStack {
+                icon
+                           
+                Text(title)
+                    .padding(.leading, 16)
+                
+                Spacer()
+                
+                Text(value)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                
+                Icon(image: R.image.chevronRight.image, size: .big)
+                    .showIf(showIndicator)
+            }
+            .frame(height: 44)
+            .padding(.horizontal, 16)
         }
-        .frame(height: 44)
-        .padding(.horizontal, 16)
     }
     
     var avatarView: some View {
         VStack(alignment: .center, spacing: 10) {
-            KFImage(ImageURLGenerator.userAvatarURL(user: viewModel.user.username))
+            KFImage(ImageURLGenerator.userAvatarURL(user: viewModel.param.username))
                 .placeholder {
                     Icon(image: R.image.tabsUser.image, size: .small)
                 }
@@ -163,7 +193,7 @@ struct UserScreen: View {
                 .frame(width: 62, height: 62)
                 .clipShape(Circle())
             
-            Text(viewModel.user.username)
+            Text(viewModel.param.username)
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundStyle(.primary)
@@ -174,5 +204,5 @@ struct UserScreen: View {
 }
 
 #Preview {
-    UserScreen(user: .init(token: "", username: "Tom"))
+    UserScreen(param: .user("tom"))
 }

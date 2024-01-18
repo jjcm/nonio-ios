@@ -4,6 +4,7 @@ import Kingfisher
 struct PostRowView: View {
     let viewModel: PostViewModel
     let votes: [Vote]
+    let didTapUserProfileAction: (() -> Void)
     let didTapPostLink: ((Post) -> Void)?
     
     var body: some View {
@@ -47,8 +48,14 @@ struct PostRowView: View {
     }
     
     var userView: some View {
-        PostUserView(viewModel: .init(post: viewModel.post, showUpvoteCount: true), commentVotesViewModel: .init(post: viewModel.post))
-            .padding(.horizontal, 16)
+        PostUserView(
+            viewModel: .init(post: viewModel.post, showUpvoteCount: true),
+            commentVotesViewModel: .init(post: viewModel.post),
+            didTapUserProfileAction: {
+                didTapUserProfileAction()
+            }
+        )
+        .padding(.horizontal, 16)
     }
     
     var tagsView: some View {

@@ -3,7 +3,7 @@ import Moya
 import Combine
 
 enum NonioAPI {
-    case getPosts(GetPostParams)
+    case getPosts(RequestParamsType)
     case getTags
     case getComments(id: String)
     case login(user: String, password: String)

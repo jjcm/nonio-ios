@@ -6,6 +6,8 @@ struct PostsScreen: View {
     @StateObject var viewModel: PostsViewModel
     @State private var showSortTimeframeActionSheet = false
     @State private var showSortActionSheet = false
+    @State private var selectedUser: String?
+    @State private var selectedPost: Post?
     
     var body: some View {
         ZStack {
@@ -44,12 +46,25 @@ struct PostsScreen: View {
                     proxy.scrollTo(viewModel.posts.first?.ID)
                 })
                 .background(UIColor.secondarySystemBackground.color)
+                .navigationDestination(for: $selectedUser) { user in
+                    UserScreen(param: .user(user))
+                }
+                .navigationTitle(viewModel.title)
+                .navigationDestination(for: $selectedPost) { post in
+                    PostDetailsScreen(
+                        viewModel: .init(
+                            post: post,
+                            votes: viewModel.votes,
+                            provider: viewModel.provider
+                        )
+                    )
+                }
             }
         }
         .onChange(of: settings.hasLoggedIn, perform: { hasLoggedIn in
             viewModel.fetchVotes(hasLoggedIn: hasLoggedIn)
         })
-        .onAppear {
+        .onLoad {
             viewModel.fetch()
             viewModel.fetchVotes(hasLoggedIn: settings.hasLoggedIn)
         }
@@ -57,35 +72,40 @@ struct PostsScreen: View {
     
     @ViewBuilder
     func rowItem(_ post: Post) -> some View {
-        ZStack {
-            PostRowView(viewModel: .init(post: post), votes: viewModel.votes, didTapPostLink: { post in
-                viewModel.didTapPostLink(post: post)
-            })
-            NavigationLink {
-                PostDetailsScreen(viewModel: .init(post: post, votes: viewModel.votes, provider: viewModel.provider))
-            } label: {
-                EmptyView()
-            }
-            .opacity(0) // hide navigation link arrow
+        Button {
+            selectedPost = post
+        } label: {
+            PostRowView(
+                viewModel: .init(post: post),
+                votes: viewModel.votes,
+                didTapUserProfileAction: {
+                    selectedUser = post.user
+                },
+                didTapPostLink: {
+                    post in
+                    viewModel.didTapPostLink(post: post)
+                })
         }
         .plainListItem()
     }
     
     @ToolbarContentBuilder
     func toolbarItems() -> some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            NavigationLink(destination: TagsScreen(viewModel: viewModel.tagsViewModel) { tag in
-                self.viewModel.onSelectTag(tag)
-            } didSelectAll: {
-                self.viewModel.onSelectAllPosts()
-            }, label: {
-                Icon(image: R.image.tag.image, size: .medium)
-            })
-            .navigationTitle("Posts")
+        if !viewModel.isUserPosts {
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationLink(destination: TagsScreen(viewModel: viewModel.tagsViewModel) { tag in
+                    self.viewModel.onSelectTag(tag)
+                } didSelectAll: {
+                    self.viewModel.onSelectAllPosts()
+                }, label: {
+                    Icon(image: R.image.tag.image, size: .medium)
+                })
+                .navigationTitle("Posts")
+            }
         }
         
         ToolbarItem(placement: .principal) {
-            Text(viewModel.displayTag)
+            Text(viewModel.title)
                 .font(.headline)
                 .foregroundColor(.secondary)
         }
