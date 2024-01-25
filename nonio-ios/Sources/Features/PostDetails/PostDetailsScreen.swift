@@ -39,7 +39,6 @@ struct PostDetailsScreen: View {
         VStack(alignment: .leading) {
             ScrollView {
                 VStack(alignment: .leading) {
-                    headerView
                     if let type = viewModel.post.type {
                         mediaView(type: type)
                     }
