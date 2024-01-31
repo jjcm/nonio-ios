@@ -7,6 +7,7 @@ struct PostDetailsScreen: View {
     @ObservedObject var viewModel: PostDetailsViewModel
     @State private var openURLViewModel = ShowInAppBrowserViewModel()
     @State private var selectedUser: String?
+    @State private var showCommentEditor = false
 
     var body: some View {
         NavigationStack {
@@ -32,6 +33,11 @@ struct PostDetailsScreen: View {
         .onLoad {
             viewModel.onLoad()
             viewModel.commentVotesViewModel.fetchCommentVotes(hasLoggedIn: settings.hasLoggedIn)
+        }
+        .sheet(isPresented: $showCommentEditor) {
+            CommentEditorScreen {
+                showCommentEditor = false
+            }
         }
     }
     

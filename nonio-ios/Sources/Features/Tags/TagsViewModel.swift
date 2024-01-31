@@ -19,7 +19,8 @@ class TagsViewModel: ObservableObject {
                 switch completion {
                 case .finished:
                     break
-                case .failure(let error):
+                case .failure:
+                    // TODO: show error
                     break
                 }
                 self.loading = false
