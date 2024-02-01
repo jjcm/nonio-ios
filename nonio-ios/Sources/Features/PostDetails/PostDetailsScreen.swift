@@ -36,14 +36,10 @@ struct PostDetailsScreen: View {
             viewModel.commentVotesViewModel.fetchCommentVotes(hasLoggedIn: settings.hasLoggedIn)
         }
         .sheet(isPresented: $showCommentEditor) {
-            CommentEditorScreen(comment: nil) {
-                showCommentEditor = false
-            }
+            commentView(nil)
         }
         .sheet(item: $showEditorWithComment) { comment in
-            CommentEditorScreen(comment: comment) {
-                showEditorWithComment = nil
-            }
+            commentView(comment)
         }
     }
     
@@ -177,6 +173,18 @@ struct PostDetailsScreen: View {
         CommentButton(action: {
             showCommentEditor = true
         })
+    }
+    
+    @ViewBuilder
+    func commentView(_ comment: Comment?) -> some View {
+        CommentEditorScreen(post: viewModel.post, comment: comment) { comment in
+            showCommentEditor = false
+            showEditorWithComment = nil
+            viewModel.onLoad()
+        } didCancel: {
+            showCommentEditor = false
+            showEditorWithComment = nil
+        }
     }
 }
 

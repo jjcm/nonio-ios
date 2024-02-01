@@ -3,13 +3,23 @@ import Combine
 
 struct CommentEditorScreen: View {
     @Environment(\.colorScheme) var colorScheme
-    private let getContentAction = PassthroughSubject<Void,Never>()
+    @ObservedObject private var viewModel: CommentEditorViewModel
     private let editorFocusAction = PassthroughSubject<Void,Never>()
+    @State private var showDeleteConfirmation = false
+    @State private var content = ""
     
-    let comment: Comment?
     let didCancel: (() -> Void)
-    init(comment: Comment?, didCancel: @escaping () -> Void) {
-        self.comment = comment
+    init(
+        post: Post,
+        comment: Comment?,
+        addCommentSuccess: @escaping (Comment) -> Void,
+        didCancel: @escaping () -> Void
+    ) {
+        self.viewModel = .init(
+            post: post,
+            comment: comment,
+            addCommentSuccess: addCommentSuccess
+        )
         self.didCancel = didCancel
     }
     
@@ -17,17 +27,14 @@ struct CommentEditorScreen: View {
         NavigationStack {
             VStack {
                 EditorWebView(
-                    editorFocusAction: editorFocusAction,
-                    getContentAction: getContentAction,
-                    didGetContent: {
-                        content in
-                        
-                    })
+                    content: $content,
+                    editorFocusAction: editorFocusAction
+                )
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        didCancel()
+                        tryToCancel()
                     } label: {
                         Text("Cancel")
                     }
@@ -35,7 +42,7 @@ struct CommentEditorScreen: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        getContentAction.send(())
+                        postAction()
                     } label: {
                         Text("Post")
                     }
@@ -45,6 +52,15 @@ struct CommentEditorScreen: View {
             .navigationTitle("Add Comment")
             .navigationBarTitleDisplayMode(.inline)
         }
+        .confirmationDialog("", isPresented: $showDeleteConfirmation, actions: {
+            Button("Delete", role: .destructive) {
+                didCancel()
+            }
+            Button("Cancel", role: .cancel) {}
+        })
+        .alert(isPresented: $viewModel.showError, error: viewModel.error, actions: {
+            
+        })
         .onAppear {
             // add delays to ensure editor is ready
             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(1)) {
@@ -52,8 +68,17 @@ struct CommentEditorScreen: View {
             }
         }
     }
-}
-
-#Preview {
-    CommentEditorScreen(comment: nil, didCancel: {})
+    
+    private func tryToCancel() {
+        if content.isEmpty {
+            didCancel()
+        } else {
+            showDeleteConfirmation = true
+        }
+    }
+    
+    private func postAction() {
+        guard !content.isEmpty else { return }
+        viewModel.addComment(content: content)
+    }
 }

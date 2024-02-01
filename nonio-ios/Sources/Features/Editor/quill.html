@@ -43,17 +43,20 @@
         theme: 'bubble'
     });
 
-    function setContent(htmlContent) {
-        quill.clipboard.dangerouslyPasteHTML(htmlContent);
-    }
-
     function getContent() {
-        var content = quill.root.innerHTML;
+        var content = quill.getContents();
         window.webkit.messageHandlers.getContent.postMessage(content);
     }
-    
+
     function editorFocus() {
         quill.focus();
     }
+
+    // content did change event
+    quill.on('text-change', function (delta, oldDelta, source) {
+        if (source === 'user') {
+            window.webkit.messageHandlers.contentDidChange.postMessage(JSON.stringify(quill.getContents()));
+        }
+    });
 
 </script>

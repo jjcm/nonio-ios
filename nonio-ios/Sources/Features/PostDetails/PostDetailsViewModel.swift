@@ -63,12 +63,7 @@ final class PostDetailsViewModel: ObservableObject {
         let contentHeight = min(screenWidth * ratio, 320)
         return CGSize(width: screenWidth, height: contentHeight)
     }
-    
-    private var decoder: JSONDecoder {
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return decoder
-    }
+
     private let parser = QuillParser()
     private let provider: MoyaProvider<NonioAPI>
     private var cancellables: Set<AnyCancellable> = []
@@ -92,17 +87,19 @@ private extension PostDetailsViewModel {
     func getComments() {
         loading = true
         provider.requestPublisher(.getComments(id: post.url))
-            .map([Comment].self, atKeyPath: "comments", using: decoder)
+            .map([Comment].self, atKeyPath: "comments", using: .default)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { completion in
+            .sink(receiveCompletion: { [weak self] completion in
+                guard let self else { return }
                 switch completion {
                 case .finished:
                     break
                 case .failure(let error):
-                    print("Error fetching posts: \(error)")
+                    debugPrint("Error fetching comments: \(error)")
                 }
                 self.loading = false
-            }, receiveValue: { comments in
+            }, receiveValue: { [weak self] comments in
+                guard let self else { return }
                 self.buildCommentHierarchy(from: comments)
             })
             .store(in: &cancellables)
