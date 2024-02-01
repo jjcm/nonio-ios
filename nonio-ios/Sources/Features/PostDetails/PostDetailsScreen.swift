@@ -51,12 +51,13 @@ struct PostDetailsScreen: View {
                     linkView
                     userView
                     postContent
+                    tagsView
                     
                     Divider()
                         .frame(height: 1)
                         .background(UIColor.separator.color)
                     
-                    tagsView
+                    commentButton
                     commentsView
                 }
             }
@@ -161,6 +162,12 @@ struct PostDetailsScreen: View {
                 .environmentObject(viewModel.commentVotesViewModel)
             }
         }
+    }
+    
+    var commentButton: some View {
+        CommentButton(action: {
+            showCommentEditor = true
+        })
     }
     
     private func didTapUserProfile(user: String) {
