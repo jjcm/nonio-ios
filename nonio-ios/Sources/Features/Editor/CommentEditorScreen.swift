@@ -6,8 +6,10 @@ struct CommentEditorScreen: View {
     private let getContentAction = PassthroughSubject<Void,Never>()
     private let editorFocusAction = PassthroughSubject<Void,Never>()
     
+    let comment: Comment?
     let didCancel: (() -> Void)
-    init(didCancel: @escaping () -> Void) {
+    init(comment: Comment?, didCancel: @escaping () -> Void) {
+        self.comment = comment
         self.didCancel = didCancel
     }
     
@@ -53,5 +55,5 @@ struct CommentEditorScreen: View {
 }
 
 #Preview {
-    CommentEditorScreen(didCancel: {})
+    CommentEditorScreen(comment: nil, didCancel: {})
 }

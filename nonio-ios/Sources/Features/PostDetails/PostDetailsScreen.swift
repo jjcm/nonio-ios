@@ -8,6 +8,7 @@ struct PostDetailsScreen: View {
     @State private var openURLViewModel = ShowInAppBrowserViewModel()
     @State private var selectedUser: String?
     @State private var showCommentEditor = false
+    @State private var showEditorWithComment: Comment?
 
     var body: some View {
         NavigationStack {
@@ -35,8 +36,13 @@ struct PostDetailsScreen: View {
             viewModel.commentVotesViewModel.fetchCommentVotes(hasLoggedIn: settings.hasLoggedIn)
         }
         .sheet(isPresented: $showCommentEditor) {
-            CommentEditorScreen {
+            CommentEditorScreen(comment: nil) {
                 showCommentEditor = false
+            }
+        }
+        .sheet(item: $showEditorWithComment) { comment in
+            CommentEditorScreen(comment: comment) {
+                showEditorWithComment = nil
             }
         }
     }
@@ -156,6 +162,9 @@ struct PostDetailsScreen: View {
                     didTapOnURL: openURLViewModel.handleURL(_:),
                     didTapUserProfileAction: { user in
                         didTapUserProfile(user: user)
+                    },
+                    replyAction: { comment in
+                        replyComment(comment)
                     }
                 )
                 .padding(.horizontal, 16)
@@ -169,8 +178,14 @@ struct PostDetailsScreen: View {
             showCommentEditor = true
         })
     }
-    
-    private func didTapUserProfile(user: String) {
+}
+
+private extension PostDetailsScreen {
+    func didTapUserProfile(user: String) {
         selectedUser = user
+    }
+    
+    func replyComment(_ comment: CommentModel) {
+        showEditorWithComment = comment.comment
     }
 }
