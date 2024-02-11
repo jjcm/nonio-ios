@@ -31,14 +31,10 @@ struct CommentView: View {
     
     var body: some View {
         SwipeViewGroup {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 0) {
                userAndContent
                 
                 Group {
-                    Divider()
-                        .frame(height: 0.5)
-                        .background(UIColor.separator.color)
-                    
                     ForEach(comment.children) { childComment in
                         CommentView(
                             comment: childComment,
@@ -54,7 +50,6 @@ struct CommentView: View {
                 }
                 .showIf(!comment.isCollapsed)
             }
-            .padding(.vertical, 8)
         }
     }
     
@@ -84,21 +79,25 @@ struct CommentView: View {
     
     var userAndContent: some View {
         SwipeView {
-            VStack {
-                userRow
-                
-                if comment.isCollapsed {
-                    Divider()
-                        .frame(height: 0.5)
-                        .background(UIColor.separator.color)
+            VStack(spacing: 0) {
+                VStack(spacing: 0) {
+                    userRow
+                        .padding(.top, 8)
+                    
+                    QuillContentView(
+                        contents: comment.toQuillRenderObject(comment: comment.comment),
+                        contentWidth: width,
+                        didTapOnURL: didTapOnURL
+                    )
+                    .padding(.vertical, 12)
                 }
+                .padding(.trailing, 16)
                 
-                QuillContentView(
-                    contents: comment.toQuillRenderObject(comment: comment.comment),
-                    contentWidth: width,
-                    didTapOnURL: didTapOnURL
-                )
+                Divider()
+                    .frame(height: 0.5)
+                    .background(UIColor.separator.color)
             }
+
         } trailingActions: { _ in
             SwipeAction {
                 replyAction(comment)
@@ -110,7 +109,7 @@ struct CommentView: View {
             }
         }
         .swipeActionCornerRadius(0)
-        .swipeSpacing(12)
+        .swipeSpacing(0)
         .swipeActionsMaskCornerRadius(0)
     }
 }

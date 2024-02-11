@@ -163,7 +163,7 @@ struct PostDetailsScreen: View {
                         replyComment(comment)
                     }
                 )
-                .padding(.horizontal, 16)
+                .padding(.leading, 16)
                 .environmentObject(viewModel.commentVotesViewModel)
             }
         }
