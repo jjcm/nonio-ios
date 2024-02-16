@@ -1,6 +1,6 @@
 import Foundation
 
-struct Comment: Identifiable, Decodable {
+struct Comment: Identifiable, Decodable, Equatable {
     let id: Int
     let date: Double
     let post: String

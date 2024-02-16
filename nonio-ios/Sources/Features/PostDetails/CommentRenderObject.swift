@@ -8,8 +8,7 @@ final class CommentModel: Identifiable, ObservableObject {
     var id: Int {
         comment.id
     }
-    
-    
+        
     let commentVotes: [CommentVote] = []
     let parser = QuillParser()
     var children: [CommentModel] = []

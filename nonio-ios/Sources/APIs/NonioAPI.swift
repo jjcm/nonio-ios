@@ -13,6 +13,7 @@ enum NonioAPI {
     case getVotes
     case addCommentVote(commentID: Int, vote: Bool)
     case getCommentVotes(post: String)
+    case addComment(content: String, post: String, parent: Int?)
 }
 
 extension NonioAPI: TargetType, AccessTokenAuthorizable {
@@ -42,6 +43,8 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             return "comment-votes"
         case .addCommentVote:
             return "comment/add-vote"
+        case .addComment:
+            return "comment/create"
         }
     }
     
@@ -49,7 +52,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
         switch self {
         case .getPosts, .getTags, .getComments, .userInfo, .getVotes, .getCommentVotes:
             return .get
-        case .login, .addVote, .removeVote, .addCommentVote:
+        case .login, .addVote, .removeVote, .addCommentVote, .addComment:
             return .post
         }
     }
@@ -84,6 +87,13 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
                 parameters: ["id": commentID, "upvoted": vote],
                 encoding: JSONEncoding.default
             )
+        case .addComment(let content, let post, let parent):
+            var params: [String: Any] = [
+                "content": content,
+                "post": post
+            ]
+            params["parent"] = parent
+            return .requestParameters(parameters: params, encoding: JSONEncoding.default)
         }
     }
     
@@ -97,7 +107,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
     
     var authorizationType: AuthorizationType? {
         switch self {
-        case .userInfo, .getVotes, .addVote, .removeVote, .getCommentVotes, .addCommentVote:
+        case .userInfo, .getVotes, .addVote, .removeVote, .getCommentVotes, .addCommentVote, .addComment:
             return .bearer
         default:
             return nil

@@ -7,6 +7,8 @@ struct PostDetailsScreen: View {
     @ObservedObject var viewModel: PostDetailsViewModel
     @State private var openURLViewModel = ShowInAppBrowserViewModel()
     @State private var selectedUser: String?
+    @State private var showCommentEditor = false
+    @State private var showEditorWithComment: Comment?
 
     var body: some View {
         NavigationStack {
@@ -33,25 +35,31 @@ struct PostDetailsScreen: View {
             viewModel.onLoad()
             viewModel.commentVotesViewModel.fetchCommentVotes(hasLoggedIn: settings.hasLoggedIn)
         }
+        .sheet(isPresented: $showCommentEditor) {
+            commentView(nil)
+        }
+        .sheet(item: $showEditorWithComment) { comment in
+            commentView(comment)
+        }
     }
     
     var content: some View {
         VStack(alignment: .leading) {
             ScrollView {
                 VStack(alignment: .leading) {
-                    headerView
                     if let type = viewModel.post.type {
                         mediaView(type: type)
                     }
                     linkView
                     userView
                     postContent
+                    tagsView
                     
                     Divider()
                         .frame(height: 1)
                         .background(UIColor.separator.color)
                     
-                    tagsView
+                    commentButton
                     commentsView
                 }
             }
@@ -150,15 +158,42 @@ struct PostDetailsScreen: View {
                     didTapOnURL: openURLViewModel.handleURL(_:),
                     didTapUserProfileAction: { user in
                         didTapUserProfile(user: user)
+                    },
+                    replyAction: { comment in
+                        replyComment(comment)
                     }
                 )
-                .padding(.horizontal, 16)
+                .padding(.leading, 16)
                 .environmentObject(viewModel.commentVotesViewModel)
             }
         }
     }
     
-    private func didTapUserProfile(user: String) {
+    var commentButton: some View {
+        CommentButton(action: {
+            showCommentEditor = true
+        })
+    }
+    
+    @ViewBuilder
+    func commentView(_ comment: Comment?) -> some View {
+        CommentEditorScreen(post: viewModel.post, comment: comment) { comment in
+            showCommentEditor = false
+            showEditorWithComment = nil
+            viewModel.onLoad()
+        } didCancel: {
+            showCommentEditor = false
+            showEditorWithComment = nil
+        }
+    }
+}
+
+private extension PostDetailsScreen {
+    func didTapUserProfile(user: String) {
         selectedUser = user
+    }
+    
+    func replyComment(_ comment: CommentModel) {
+        showEditorWithComment = comment.comment
     }
 }
