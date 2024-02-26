@@ -1,5 +1,3 @@
-
-
 import Foundation
 
 struct LoginResponse: Codable, Equatable {
