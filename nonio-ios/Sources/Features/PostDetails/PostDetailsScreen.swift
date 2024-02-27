@@ -122,8 +122,7 @@ struct PostDetailsScreen: View {
     var userView: some View {
         PostUserView(
             viewModel: .init(
-                post: viewModel.post,
-                showUpvoteCount: true
+                post: viewModel.post
             ),
             commentVotesViewModel: viewModel.commentVotesViewModel,
             didTapUserProfileAction: {

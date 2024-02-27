@@ -1,12 +1,12 @@
 import Foundation
 
-struct InboxNotification: Decodable {
+struct InboxNotification: Decodable, Hashable {
     let id: Int
     let comment_id: Int
     let date: Int
     /// refers to the post's url
     let post: String
-    let postTitle: String
+    let post_title: String
     let content: String
     let user: String
     let upvotes: Int
@@ -16,3 +16,14 @@ struct InboxNotification: Decodable {
     let read: Bool
 }
 
+
+extension InboxNotification {
+    enum ReplyType {
+        case post
+        case comment(id: Int)
+    }
+
+    var replyType: ReplyType {
+        parent > 0 ? .post : .comment(id: parent)
+    }
+}

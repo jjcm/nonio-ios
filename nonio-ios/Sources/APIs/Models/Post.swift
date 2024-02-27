@@ -13,8 +13,7 @@ struct Post: Codable {
     let commentCount: Int
     let tags: [PostTag]
     let width: CGFloat?
-    let height: CGFloat?
-    
+    let height: CGFloat?    
     let date: Date
     
     init(from decoder: Decoder) throws {

@@ -9,7 +9,7 @@ final class PostDetailsViewModel: ObservableObject {
     @Published private(set) var commentViewModels: [CommentModel] = []
     
     private(set) lazy var commentVotesViewModel: CommentVotesViewModel = {
-        CommentVotesViewModel(post: post)
+        CommentVotesViewModel(postURL: post.url)
     }()
 
     var postContent: [QuillViewRenderObject] {

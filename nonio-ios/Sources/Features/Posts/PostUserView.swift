@@ -44,8 +44,9 @@ struct PostUserView: View {
                         .clipShape(Circle())
                         .layoutPriority(1)
                     
-                    Text(viewModel.user)
-                        .foregroundColor(.primary)
+                    Text(viewModel.userText)
+                        .foregroundColor(UIColor.label.color)
+                        .fontWeight(viewModel.isReply ? .semibold : .regular)
                         .lineLimit(1)
                 }
             }
