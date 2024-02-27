@@ -50,7 +50,8 @@ struct PostUserView: View {
                         .lineLimit(1)
                 }
             }
-            
+            .buttonStyle(.plain)
+
             Spacer()
             
             HStack(spacing: 12) {

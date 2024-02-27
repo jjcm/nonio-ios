@@ -7,7 +7,8 @@ final class PostDetailsViewModel: ObservableObject {
     
     @Published private(set) var loading: Bool = false
     @Published private(set) var commentViewModels: [CommentModel] = []
-    
+    @Published private(set) var commentCount: Int = 0
+
     private(set) lazy var commentVotesViewModel: CommentVotesViewModel = {
         CommentVotesViewModel(postURL: post.url)
     }()
@@ -20,7 +21,7 @@ final class PostDetailsViewModel: ObservableObject {
     let votes: [Vote]
     
     var title: String {
-        "\(post.commentCount) \(post.commentCount > 1 ? "Comments" : "Comment")"
+        "\(commentCount) \(commentCount > 1 ? "Comments" : "Comment")"
     }
     
     var imageURL: URL? {
@@ -71,11 +72,12 @@ final class PostDetailsViewModel: ObservableObject {
     init(
         post: Post,
         votes: [Vote],
-        provider: MoyaProvider<NonioAPI>
+        provider: MoyaProvider<NonioAPI> = .defaultProvider
     ) {
         self.post = post
         self.votes = votes
         self.provider = provider
+        self.commentCount = post.commentCount
     }
     
     func onLoad() {
@@ -100,6 +102,7 @@ private extension PostDetailsViewModel {
                 self.loading = false
             }, receiveValue: { [weak self] comments in
                 guard let self else { return }
+                self.commentCount = comments.count
                 self.buildCommentHierarchy(from: comments)
             })
             .store(in: &cancellables)
