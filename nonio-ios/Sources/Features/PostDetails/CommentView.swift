@@ -72,7 +72,9 @@ struct CommentView: View {
         .contentShape(Rectangle())
         .onLongPressGesture {
             withAnimation {
-                comment.isCollapsed.toggle()
+                if !comment.isLeaf {
+                    comment.isCollapsed.toggle()
+                }
             }
         }
     }

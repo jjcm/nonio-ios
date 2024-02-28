@@ -59,14 +59,16 @@ struct PostUserView: View {
                 Button {
                     upvoteAction?()
                 } label: {
-                    if settings.hasLoggedIn {
-                        Icon(image: R.image.upvote.image, size: .small)
-                            .foregroundStyle(voted ? Style.votedColor : Style.normalTextColor)
-                            .showIf(settings.hasLoggedIn && upvoteAction != nil)
-                    }
-                    if let upvotesString = viewModel.upvotesString {
-                        Text(upvotesString)
-                            .foregroundStyle(Style.normalTextColor)
+                    HStack {
+                        if settings.hasLoggedIn {
+                            Icon(image: R.image.upvote.image, size: .small)
+                                .foregroundStyle(voted ? Style.votedColor : Style.normalTextColor)
+                                .showIf(settings.hasLoggedIn && upvoteAction != nil)
+                        }
+                        if let upvotesString = viewModel.upvotesString {
+                            Text(upvotesString)
+                                .foregroundStyle(Style.normalTextColor)
+                        }
                     }
                 }
                 .disabled(upvoteAction == nil || voted)
