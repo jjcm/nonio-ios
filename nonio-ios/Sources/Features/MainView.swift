@@ -12,7 +12,8 @@ struct MainView: View {
 
     @State private var selection = TabItemTag.posts
     @EnvironmentObject var settings: AppSettings
-    
+    @EnvironmentObject var notificationDataTicker: NotificationUnreadTicker
+
     var body: some View {
         TabView(selection: $selection) {
             PostsScreen(viewModel: PostsViewModel())
@@ -26,6 +27,7 @@ struct MainView: View {
                     makeTabItem(title: "Inbox", image: R.image.tabsInbox.image)
                 }
                 .tag(TabItemTag.inbox)
+                .badge(notificationDataTicker.unreadCount)
 
             SubmitScreen()
                 .tabItem {

@@ -24,6 +24,13 @@ extension InboxNotification {
     }
 
     var replyType: ReplyType {
-        parent > 0 ? .post : .comment(id: parent)
+        parent > 0 ? .comment(id: parent) : .post
+    }
+
+    var isPostReply: Bool {
+        if case .post = replyType {
+            return true
+        }
+        return false
     }
 }

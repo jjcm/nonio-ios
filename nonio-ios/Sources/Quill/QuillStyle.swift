@@ -6,7 +6,7 @@ protocol QuillContentStyle {
     var header2FontSize: CGFloat { get }
     var lineHeightMultiple: CGFloat { get }
     var underlineStyle: NSUnderlineStyle { get }
-    var textColor: UIColor { get }
+    var textColor: UIColor? { get }
     var backgroundColor: UIColor { get }
     var linkColor: UIColor { get }
     var bulletPointSymbol: String { get }
@@ -22,7 +22,7 @@ struct DefaultQuillStyle: QuillContentStyle {
     var header2FontSize: CGFloat { 20 }
     var lineHeightMultiple: CGFloat { 1.2 }
     var underlineStyle: NSUnderlineStyle { .single }
-    var textColor: UIColor { .label }
+    var textColor: UIColor? = .label
     var backgroundColor: UIColor { .systemBackground }
     var linkColor: UIColor { .systemBlue }
     var bulletPointSymbol: String { "\u{2022}" }

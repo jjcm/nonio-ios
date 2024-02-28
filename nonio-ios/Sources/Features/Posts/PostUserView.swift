@@ -47,7 +47,7 @@ struct PostUserView: View {
                     Text(viewModel.userText)
                         .foregroundColor(UIColor.label.color)
                         .fontWeight(viewModel.isReply ? .semibold : .regular)
-                        .lineLimit(1)
+                        .lineLimit(2)
                 }
             }
             .buttonStyle(.plain)

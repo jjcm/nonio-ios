@@ -19,7 +19,7 @@ enum NonioAPI {
 
     case getNotifications(unread: Bool?)
     case getNotificationsUnreadCount
-    case markNotificationRead(commentID: Int)
+    case markNotificationRead(id: Int)
 }
 
 extension NonioAPI: TargetType, AccessTokenAuthorizable {
@@ -110,8 +110,8 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             var params: [String: Any] = [:]
             params["unread"] = unread
             return .requestParameters(parameters: params, encoding: URLEncoding.default)
-        case .markNotificationRead(let commentID):
-            return .requestParameters(parameters: ["id": commentID], encoding: JSONEncoding.default)
+        case .markNotificationRead(let id):
+            return .requestParameters(parameters: ["id": id], encoding: JSONEncoding.default)
 
         }
     }

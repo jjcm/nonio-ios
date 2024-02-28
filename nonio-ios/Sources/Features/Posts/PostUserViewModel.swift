@@ -64,7 +64,7 @@ final class PostUserViewModel: ObservableObject {
         self.showCommentCount = false
         self.showUpvoteCount = showUpvoteCount
         self.commentID = comment.id
-        self.modelType = .comment
+        self.modelType = .user
     }
     
     init(

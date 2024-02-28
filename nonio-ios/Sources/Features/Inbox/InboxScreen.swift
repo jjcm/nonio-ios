@@ -3,7 +3,8 @@ import SwiftUI
 struct InboxScreen: View {
     @StateObject var viewModel: InboxViewModel
     @State private var selectedUser: String?
-    @State private var selectedPost: Post?
+    @State private var selectedNotification: InboxNotification?
+    @EnvironmentObject var notificationDataTicker: NotificationUnreadTicker
 
     var body: some View {
         ZStack {
@@ -31,8 +32,9 @@ struct InboxScreen: View {
             .navigationDestination(for: $selectedUser) { user in
                 UserScreen(param: .user(user))
             }
-            .navigationDestination(for: $selectedPost) { post in
-                PostDetailsScreen(
+            .navigationDestination(for: $selectedNotification) { notification in
+                let post = Post.make(from: notification)
+                return PostDetailsScreen(
                     viewModel: .init(
                         post: post,
                         votes: []
@@ -42,6 +44,10 @@ struct InboxScreen: View {
         }
         .onLoad {
             viewModel.fetch()
+        }
+        .onChange(of: viewModel.unreadCountUpdated) { count in
+            guard let count else { return }
+            notificationDataTicker.updateCount(count)
         }
     }
 
@@ -58,7 +64,7 @@ struct InboxScreen: View {
             .padding(.vertical, 10)
 
             QuillContentView(
-                contents: viewModel.toQuillRenderObject(content: model.content),
+                contents: viewModel.toQuillRenderObject(model: model),
                 contentWidth: UIScreen.main.bounds.width - Layout.horizontalPadding * 2) { _ in
                     // open link if needed
                 }
@@ -66,6 +72,7 @@ struct InboxScreen: View {
 
             postLink(model: model)
                 .padding(.bottom, 10)
+                .showIf(!model.post_title.isEmpty)
         }
         .padding(.horizontal, Layout.horizontalPadding)
         .background(UIColor.systemBackground.color)
@@ -75,7 +82,8 @@ struct InboxScreen: View {
     @ViewBuilder
     func postLink(model: InboxNotification) -> some View {
         Button {
-            selectedPost = Post.make(from: model)
+            viewModel.markAsReadIfNeeded(notification: model)
+            selectedNotification = model
         } label: {
             HStack {
                 // todo: image
