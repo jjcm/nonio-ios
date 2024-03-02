@@ -70,7 +70,7 @@ extension InboxNotification {
         case .comment:
             type = .comment
         }
-        return .init(post: .make(from: self), showCommentCount: false, modelType: type)
+        return .init(post: .make(from: self), showCommentCount: false, modelType: type, read: read)
     }
 
     var commentVotesViewModel: CommentVotesViewModel {

@@ -44,10 +44,20 @@ struct PostUserView: View {
                         .clipShape(Circle())
                         .layoutPriority(1)
                     
-                    Text(viewModel.userText)
-                        .foregroundColor(UIColor.label.color)
-                        .fontWeight(viewModel.isReply ? .semibold : .regular)
-                        .lineLimit(2)
+                    HStack {
+                        Text(viewModel.user)
+                            .foregroundColor(UIColor.label.color)
+                            .fontWeight(viewModel.isReply ? .semibold : .regular)
+                            .lineLimit(2)
+
+                        if let userText = viewModel.actionText {
+                            Text(userText)
+                                .foregroundColor(viewModel.read ? UIColor.secondaryLabel.color : UIColor.label.color)
+                                .fontWeight(viewModel.isReply ? .semibold : .regular)
+                                .lineLimit(2)
+                        }
+                    }
+
                 }
             }
             .buttonStyle(.plain)

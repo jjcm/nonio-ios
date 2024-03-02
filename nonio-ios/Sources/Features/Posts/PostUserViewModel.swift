@@ -23,16 +23,18 @@ final class PostUserViewModel: ObservableObject {
     let showCommentCount: Bool
     let showUpvoteCount: Bool
     
-    var userText: String {
+    var actionText: String? {
         switch modelType {
         case .user:
-            return user
+            return nil
         case .comment:
-            return "\(user) replied to your post"
+            return "replied to your post"
         case .post:
-            return "\(user) replied to your comment"
+            return "replied to your comment"
         }
     }
+
+    var read: Bool = false
 
     var isReply: Bool {
         switch modelType {
@@ -72,7 +74,8 @@ final class PostUserViewModel: ObservableObject {
         showUpvoteCount: Bool = true,
         showCommentCount: Bool = true,
         calendar: Calendar = .current,
-        modelType: ModelType = .user
+        modelType: ModelType = .user,
+        read: Bool = false
     ) {
         self.user = post.user
         self.commentCount = post.commentCount
@@ -82,5 +85,6 @@ final class PostUserViewModel: ObservableObject {
         self.showUpvoteCount = showUpvoteCount
         self.upvotesString = "\(post.score) \(post.score > 1 ? "votes" : "vote")"
         self.modelType = modelType
+        self.read = read
     }
 }
