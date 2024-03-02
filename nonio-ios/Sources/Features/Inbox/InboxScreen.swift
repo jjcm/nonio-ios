@@ -36,7 +36,7 @@ struct InboxScreen: View {
                 let post = Post.make(from: notification)
                 return PostDetailsScreen(
                     viewModel: .init(
-                        post: post,
+                        postURL: notification.post,
                         votes: [],
                         scrollToComment: notification.comment_id
                     )

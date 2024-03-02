@@ -25,7 +25,7 @@ struct PostDetailsScreen: View {
             .navigationTitle("Posts")
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Text(viewModel.title)
+                    Text(viewModel.post?.detailsTitle ?? "")
                         .font(.headline)
                         .foregroundColor(.secondary)
                 }
@@ -36,10 +36,10 @@ struct PostDetailsScreen: View {
             viewModel.commentVotesViewModel.fetchCommentVotes(hasLoggedIn: settings.hasLoggedIn)
         }
         .sheet(isPresented: $showCommentEditor) {
-            commentView(nil)
+            commentEditorView(nil)
         }
         .sheet(item: $showEditorWithComment) { comment in
-            commentView(comment)
+            commentEditorView(comment)
         }
     }
     
@@ -47,27 +47,27 @@ struct PostDetailsScreen: View {
         VStack(alignment: .leading) {
             ScrollViewReader { scrollProxy in
                 List {
-                    if let type = viewModel.post.type {
-                        mediaView(type: type)
+                    if let post = viewModel.post {
+                        mediaView(post: post)
+                            .plainListItem()
+                        linkView(post: post)
+                            .plainListItem()
+                        userView(post: post)
+                            .plainListItem()
+                        postContent
+                            .plainListItem()
+                        tagsView(post: post)
+                            .plainListItem()
+
+                        Divider()
+                            .frame(height: 1)
+                            .background(UIColor.separator.color)
+
+                        commentButton
+                            .plainListItem()
+                        commentsView
                             .plainListItem()
                     }
-                    linkView
-                        .plainListItem()
-                    userView
-                        .plainListItem()
-                    postContent
-                        .plainListItem()
-                    tagsView
-                        .plainListItem()
-
-                    Divider()
-                        .frame(height: 1)
-                        .background(UIColor.separator.color)
-
-                    commentButton
-                        .plainListItem()
-                    commentsView
-                        .plainListItem()
                 }
                 .listStyle(.plain)
                 .onChange(of: viewModel.scrollToComment) { id in
@@ -100,61 +100,63 @@ struct PostDetailsScreen: View {
     }
     
     @ViewBuilder
-    func mediaView(type: Post.ContentType) -> some View {
-        switch type {
+    func mediaView(post: Post) -> some View {
+        switch post.type {
         case .image:
-            if let imageURL = viewModel.imageURL {
+            if let imageURL = post.imageURL {
                 KFImage(imageURL)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: viewModel.mediaSize.width)
-                    .frame(height: viewModel.mediaSize.height, alignment: .center)
+                    .frame(width: post.mediaSize.width)
+                    .frame(height: post.mediaSize.height, alignment: .center)
                     .clipped()
-                    .showIf(viewModel.shouldShowImage)
+                    .showIf(post.shouldShowImage)
             }
         case .video:
-            if let videoURL = viewModel.videoURL {
+            if let videoURL = post.videoURL {
                 PostVideoPlayerView(url: videoURL)
-                    .frame(width: viewModel.mediaSize.width)
-                    .frame(height: viewModel.mediaSize.height)
+                    .frame(width: post.mediaSize.width)
+                    .frame(height: post.mediaSize.height)
             }
         default:
             EmptyView()
         }
     }
     
-    var linkView: some View {
-        LinkView(urlString: viewModel.linkString) {
-            guard let url = viewModel.post.link else { return }
+    @ViewBuilder
+    func linkView(post: Post) -> some View {
+        LinkView(urlString: post.linkString) {
+            guard let url = post.link else { return }
             openURLViewModel.handleURL(url)
         }
         .padding(.horizontal, 16)
-        .showIf(viewModel.shouldShowLink)
+        .showIf(post.shouldShowLink)
     }
     
-    var userView: some View {
+    @ViewBuilder
+    func userView(post: Post) -> some View {
         PostUserView(
-            viewModel: .init(post: viewModel.post),
-            commentVotesViewModel: viewModel.commentVotesViewModel,
+            viewModel: .init(post: post),
+            commentVotesViewModel: CommentVotesViewModel(postURL: post.url),
             didTapUserProfileAction: {
-                didTapUserProfile(user: viewModel.post.user)
+                didTapUserProfile(user: post.user)
             }
         )
         .padding(.top, 10)
         .padding(.horizontal, 16)
-        .environmentObject(viewModel.commentVotesViewModel)
     }
     
-    var tagsView: some View {
+    @ViewBuilder
+    func tagsView(post: Post) -> some View {
         HorizontalTagsScrollView(
-            post: viewModel.post.url,
-            tags: viewModel.post.tags,
+            post: post.url,
+            tags: post.tags,
             votes: viewModel.votes,
             style: .init(height: 28, textColor: .blue)
         )
         .padding(.horizontal, 16)
         .padding(.bottom, 10)
-        .showIf(viewModel.shouldShowTags)
+        .showIf(post.shouldShowTags)
     }
     
     var commentsView: some View {
@@ -193,8 +195,8 @@ struct PostDetailsScreen: View {
     }
     
     @ViewBuilder
-    func commentView(_ comment: Comment?) -> some View {
-        CommentEditorScreen(post: viewModel.post, comment: comment) { comment in
+    func commentEditorView(_ comment: Comment?) -> some View {
+        CommentEditorScreen(postURL: viewModel.postURL, comment: comment) { comment in
             showCommentEditor = false
             showEditorWithComment = nil
             viewModel.onLoad()

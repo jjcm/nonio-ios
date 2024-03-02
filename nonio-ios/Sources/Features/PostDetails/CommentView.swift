@@ -38,12 +38,14 @@ struct CommentView: View {
                 userRow
                     .padding(.top, 8)
 
+                let leading = Layout.levelIndent * CGFloat(comment.level)
+                let contentWidth = width - leading
                 QuillContentView(
                     contents: comment.toQuillRenderObject(comment: comment.comment),
-                    contentWidth: width,
+                    contentWidth: contentWidth,
                     didTapOnURL: didTapOnURL
                 )
-                .padding(.leading, Layout.levelIndent * CGFloat(comment.level))
+                .padding(.leading, leading)
                 .padding(.vertical, 12)
             }
             .padding(.horizontal, 16)
@@ -91,28 +93,6 @@ struct CommentView: View {
                     comment.isCollapsed.toggle()
                 }
             }
-        }
-    }
-
-    var userAndContent: some View {
-        VStack(spacing: 0) {
-            VStack(spacing: 0) {
-                userRow
-                    .padding(.top, 8)
-
-                QuillContentView(
-                    contents: comment.toQuillRenderObject(comment: comment.comment),
-                    contentWidth: width,
-                    didTapOnURL: didTapOnURL
-                )
-                .padding(.leading, Layout.levelIndent * CGFloat(comment.level))
-                .padding(.vertical, 12)
-            }
-            .padding(.trailing, 16)
-
-            Divider()
-                .frame(height: 0.5)
-                .background(UIColor.separator.color)
         }
     }
 }

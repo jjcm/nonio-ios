@@ -4,6 +4,7 @@ import Combine
 
 enum NonioAPI {
     case getPosts(RequestParamsType)
+    case getPost(id: String)
     case getTags
     case getComments(id: String)
     case login(user: String, password: String)
@@ -31,6 +32,8 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
         switch self {
         case .getPosts:
             return "posts"
+        case .getPost(let id):
+            return "posts/\(id)"
         case .getTags:
             return "tags"
         case .getComments:
@@ -62,7 +65,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
     
     var method: Moya.Method {
         switch self {
-        case .getPosts, .getTags, .getComments, .userInfo, .getVotes, .getCommentVotes, .getNotifications, .getNotificationsUnreadCount:
+        case .getPosts, .getTags, .getComments, .userInfo, .getVotes, .getCommentVotes, .getNotifications, .getNotificationsUnreadCount, .getPost:
             return .get
         case .login, .addVote, .removeVote, .addCommentVote, .addComment, .markNotificationRead:
             return .post
@@ -78,7 +81,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             )
         case .getComments(let id):
             return .requestParameters(parameters: ["post": id], encoding: URLEncoding.default)
-        case .getTags, .userInfo, .getVotes, .getNotificationsUnreadCount:
+        case .getTags, .userInfo, .getVotes, .getNotificationsUnreadCount, .getPost:
             return .requestPlain
         case .login(let user, let password):
             let params = [

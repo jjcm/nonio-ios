@@ -6,93 +6,70 @@ import Combine
 final class PostDetailsViewModel: ObservableObject {
     
     @Published private(set) var loading: Bool = false
+    @Published private(set) var post: Post?
     @Published private(set) var commentViewModels: [CommentModel] = []
     @Published private(set) var commentCount: Int = 0
     @Published private(set) var scrollToComment: Int?
+    @Published private(set) var title: String = ""
+    @Published private(set) var postContent: [QuillViewRenderObject] = []
 
     private(set) lazy var commentVotesViewModel: CommentVotesViewModel = {
-        CommentVotesViewModel(postURL: post.url)
+        CommentVotesViewModel(postURL: postURL)
     }()
 
-    var postContent: [QuillViewRenderObject] {
-        parser.parseQuillJS(json: post.content)
-    }
-        
-    let post: Post
     let votes: [Vote]
-    
-    var title: String {
-        "\(commentCount) \(commentCount > 1 ? "Comments" : "Comment")"
-    }
-    
-    var imageURL: URL? {
-        ImageURLGenerator.imageURL(path: post.url)
-    }
-    
-    var videoURL: URL? {
-        ImageURLGenerator.videoURL(path: post.url)
-    }
-    
-    var linkString: String {
-        post.link?.absoluteString ?? ""
-    }
-    
-    var shouldShowImage: Bool {
-        if post.type == .image || post.type == .link {
-            return true
-        }
-        return false
-    }
-    
-    var shouldShowLink: Bool {
-        post.link != nil
-    }
-    
-    var shouldShowTags: Bool {
-        !post.tags.isEmpty
-    }
-    
-    var mediaSize: CGSize {
-        guard let width = post.width,
-              let height = post.height,
-              width > 0, 
-                height > 0
-        else {
-            return CGSize(width: UIScreen.main.bounds.width, height: 200)
-        }
-        let ratio = CGFloat(height / width)
-        let screenWidth = UIScreen.main.bounds.width
-        let contentHeight = min(screenWidth * ratio, 320)
-        return CGSize(width: screenWidth, height: contentHeight)
-    }
 
+    let postURL: String
     private let parser = QuillParser()
     private let provider: MoyaProvider<NonioAPI>
     private var cancellables: Set<AnyCancellable> = []
     private let scrollToCommentID: Int?
 
     init(
-        post: Post,
+        postURL: String,
         votes: [Vote],
         scrollToComment: Int? = nil,
         provider: MoyaProvider<NonioAPI> = .defaultProvider
     ) {
-        self.post = post
+        self.postURL = postURL
         self.votes = votes
         self.provider = provider
-        self.commentCount = post.commentCount
         self.scrollToCommentID = scrollToComment
     }
     
     func onLoad() {
+        getPost()
         getComments()
     }
 }
 
 private extension PostDetailsViewModel {
+
+    func getPost() {
+        loading = true
+        provider.requestPublisher(.getPost(id: postURL))
+            .map(Post.self, using: .default)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { [weak self] completion in
+                guard let self else { return }
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    debugPrint("Error fetching post: \(error)")
+                }
+                self.loading = false
+            }, receiveValue: { [weak self] post in
+                guard let self else { return }
+                self.post = post
+                self.postContent = parser.parseQuillJS(json: post.content)
+            })
+            .store(in: &cancellables)
+    }
+
     func getComments() {
         loading = true
-        provider.requestPublisher(.getComments(id: post.url))
+        provider.requestPublisher(.getComments(id: postURL))
             .map([Comment].self, atKeyPath: "comments", using: .default)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] completion in
@@ -106,7 +83,6 @@ private extension PostDetailsViewModel {
                 self.loading = false
             }, receiveValue: { [weak self] comments in
                 guard let self else { return }
-                self.commentCount = comments.count
                 self.buildCommentHierarchy(from: comments)
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -144,5 +120,54 @@ private extension PostDetailsViewModel {
             }
 
         commentViewModels = result
+    }
+}
+
+
+extension Post {
+
+    var detailsTitle: String {
+        "\(commentCount) \(commentCount > 1 ? "Comments" : "Comment")"
+    }
+
+    var imageURL: URL? {
+        ImageURLGenerator.imageURL(path: url)
+    }
+
+    var videoURL: URL? {
+        ImageURLGenerator.videoURL(path: url)
+    }
+
+    var linkString: String {
+        link?.absoluteString ?? ""
+    }
+
+    var shouldShowImage: Bool {
+        if type == .image || type == .link {
+            return true
+        }
+        return false
+    }
+
+    var shouldShowLink: Bool {
+        link != nil
+    }
+
+    var shouldShowTags: Bool {
+        !tags.isEmpty
+    }
+
+    var mediaSize: CGSize {
+        guard let width = width,
+              let height = height,
+              width > 0,
+                height > 0
+        else {
+            return CGSize(width: UIScreen.main.bounds.width, height: 200)
+        }
+        let ratio = CGFloat(height / width)
+        let screenWidth = UIScreen.main.bounds.width
+        let contentHeight = min(screenWidth * ratio, 320)
+        return CGSize(width: screenWidth, height: contentHeight)
     }
 }
