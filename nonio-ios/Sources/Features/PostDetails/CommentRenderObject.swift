@@ -5,6 +5,8 @@ final class CommentModel: Identifiable, ObservableObject {
     @Published var isCollapsed = false
     @Published var upvotesString: String = ""
     
+    let level: Int
+
     var id: Int {
         comment.id
     }
@@ -24,9 +26,11 @@ final class CommentModel: Identifiable, ObservableObject {
     
     init(
         comment: Comment,
+        level: Int,
         parser: QuillParser = .init()
     ) {
         self.comment = comment
+        self.level = level
         self.upvotes = comment.upvotes
         self.upvotesString = toVoteString(upvotes: comment.upvotes)
     }

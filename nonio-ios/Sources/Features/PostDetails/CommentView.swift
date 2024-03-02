@@ -1,24 +1,26 @@
 import Foundation
 import SwiftUI
-import SwipeActions
 
 struct CommentView: View {
     @ObservedObject var comment: CommentModel
     @ObservedObject var commentVotesViewModel: CommentVotesViewModel
+    @State private var showHighlightedAnimation: Bool = false
     let showUpvoteCount: Bool
     let width: CGFloat
     let didTapOnURL: ((URL) -> Void)?
     let didTapUserProfileAction: ((String) -> Void)
-    let replyAction: ((CommentModel) -> Void)
-    
+    let animationEnded: (() -> Void)
+    let showHighlightedAnimationValue: Bool
+
     init(
         comment: CommentModel,
         showUpvoteCount: Bool,
         width: CGFloat,
         commentVotesViewModel: CommentVotesViewModel,
+        showHighlightedAnimation: Bool,
         didTapOnURL: ((URL) -> Void)?,
         didTapUserProfileAction: @escaping ((String) -> Void),
-        replyAction: @escaping ((CommentModel) -> Void)
+        animationEnded: @escaping (() -> Void)
     ) {
         self.comment = comment
         self.width = width
@@ -26,33 +28,46 @@ struct CommentView: View {
         self.didTapOnURL = didTapOnURL
         self.showUpvoteCount = showUpvoteCount
         self.didTapUserProfileAction = didTapUserProfileAction
-        self.replyAction = replyAction
+        self.showHighlightedAnimationValue = showHighlightedAnimation
+        self.animationEnded = animationEnded
     }
-    
+
     var body: some View {
-        SwipeViewGroup {
-            VStack(alignment: .leading, spacing: 0) {
-               userAndContent
-                
-                Group {
-                    ForEach(comment.children) { childComment in
-                        CommentView(
-                            comment: childComment,
-                            showUpvoteCount: showUpvoteCount,
-                            width: width - Layout.levelIndent,
-                            commentVotesViewModel: commentVotesViewModel,
-                            didTapOnURL: didTapOnURL,
-                            didTapUserProfileAction: didTapUserProfileAction,
-                            replyAction: replyAction
-                        )
-                        .padding(.leading, Layout.levelIndent)
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(spacing: 0) {
+                userRow
+                    .padding(.top, 8)
+
+                QuillContentView(
+                    contents: comment.toQuillRenderObject(comment: comment.comment),
+                    contentWidth: width,
+                    didTapOnURL: didTapOnURL
+                )
+                .padding(.leading, Layout.levelIndent * CGFloat(comment.level))
+                .padding(.vertical, 12)
+            }
+            .padding(.horizontal, 16)
+
+            Divider()
+                .frame(height: 0.5)
+                .background(UIColor.separator.color)
+        }
+        .background(showHighlightedAnimation ? UIColor.secondarySystemBackground.color : .clear)
+        .onAppear {
+            if showHighlightedAnimationValue {
+                if #available(iOS 17.0, *) {
+                    withAnimation(.easeInOut(duration: 0.6), completionCriteria: .removed) {
+                        showHighlightedAnimation = true
+                    } completion: {
+                        showHighlightedAnimation = false
+                        animationEnded()
                     }
                 }
-                .showIf(!comment.isCollapsed)
             }
         }
+        .animation(.easeInOut, value: showHighlightedAnimation)
     }
-    
+
     var userRow: some View {
         PostUserView(
             viewModel: .init(
@@ -78,41 +93,27 @@ struct CommentView: View {
             }
         }
     }
-    
-    var userAndContent: some View {
-        SwipeView {
-            VStack(spacing: 0) {
-                VStack(spacing: 0) {
-                    userRow
-                        .padding(.top, 8)
-                    
-                    QuillContentView(
-                        contents: comment.toQuillRenderObject(comment: comment.comment),
-                        contentWidth: width,
-                        didTapOnURL: didTapOnURL
-                    )
-                    .padding(.vertical, 12)
-                }
-                .padding(.trailing, 16)
-                
-                Divider()
-                    .frame(height: 0.5)
-                    .background(UIColor.separator.color)
-            }
 
-        } trailingActions: { _ in
-            SwipeAction {
-                replyAction(comment)
-            } label: { highlight in
-                Icon(image: R.image.replyDown.image, size: .medium)
-                    .tint(UIColor.label.color)
-            } background: { highlight in
-                UIColor(red: 0.04, green: 0.52, blue: 1, alpha: 1).color.opacity(highlight ? 0.7 : 1.0)
+    var userAndContent: some View {
+        VStack(spacing: 0) {
+            VStack(spacing: 0) {
+                userRow
+                    .padding(.top, 8)
+
+                QuillContentView(
+                    contents: comment.toQuillRenderObject(comment: comment.comment),
+                    contentWidth: width,
+                    didTapOnURL: didTapOnURL
+                )
+                .padding(.leading, Layout.levelIndent * CGFloat(comment.level))
+                .padding(.vertical, 12)
             }
+            .padding(.trailing, 16)
+
+            Divider()
+                .frame(height: 0.5)
+                .background(UIColor.separator.color)
         }
-        .swipeActionCornerRadius(0)
-        .swipeSpacing(0)
-        .swipeActionsMaskCornerRadius(0)
     }
 }
 

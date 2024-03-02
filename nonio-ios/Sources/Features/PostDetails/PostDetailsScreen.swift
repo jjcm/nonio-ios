@@ -1,7 +1,6 @@
 import SwiftUI
 import Kingfisher
 
-
 struct PostDetailsScreen: View {
     @EnvironmentObject var settings: AppSettings
     @ObservedObject var viewModel: PostDetailsViewModel
@@ -9,6 +8,7 @@ struct PostDetailsScreen: View {
     @State private var selectedUser: String?
     @State private var showCommentEditor = false
     @State private var showEditorWithComment: Comment?
+    @State private var highlightAnimationEnded: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -45,22 +45,35 @@ struct PostDetailsScreen: View {
     
     var content: some View {
         VStack(alignment: .leading) {
-            ScrollView {
-                VStack(alignment: .leading) {
+            ScrollViewReader { scrollProxy in
+                List {
                     if let type = viewModel.post.type {
                         mediaView(type: type)
+                            .plainListItem()
                     }
                     linkView
+                        .plainListItem()
                     userView
+                        .plainListItem()
                     postContent
+                        .plainListItem()
                     tagsView
-                    
+                        .plainListItem()
+
                     Divider()
                         .frame(height: 1)
                         .background(UIColor.separator.color)
-                    
+
                     commentButton
+                        .plainListItem()
                     commentsView
+                        .plainListItem()
+                }
+                .listStyle(.plain)
+                .onChange(of: viewModel.scrollToComment) { id in
+                    withAnimation {
+                        scrollProxy.scrollTo(id)
+                    }
                 }
             }
         }
@@ -145,23 +158,30 @@ struct PostDetailsScreen: View {
     }
     
     var commentsView: some View {
-        VStack {
-            ForEach(viewModel.commentViewModels) { comment in
-                CommentView(
-                    comment: comment,
-                    showUpvoteCount: true,
-                    width: UIScreen.main.bounds.width - 2 * 16,
-                    commentVotesViewModel: viewModel.commentVotesViewModel,
-                    didTapOnURL: openURLViewModel.handleURL(_:),
-                    didTapUserProfileAction: { user in
-                        didTapUserProfile(user: user)
-                    },
-                    replyAction: { comment in
-                        replyComment(comment)
-                    }
-                )
-                .padding(.leading, 16)
-                .environmentObject(viewModel.commentVotesViewModel)
+        ForEach(viewModel.commentViewModels) { comment in
+            CommentView(
+                comment: comment,
+                showUpvoteCount: true,
+                width: UIScreen.main.bounds.width - 2 * 16,
+                commentVotesViewModel: viewModel.commentVotesViewModel,
+                showHighlightedAnimation: !highlightAnimationEnded && viewModel.scrollToComment == comment.id,
+                didTapOnURL: openURLViewModel.handleURL(_:),
+                didTapUserProfileAction: { user in
+                    didTapUserProfile(user: user)
+                },
+                animationEnded: {
+                    highlightAnimationEnded = true
+                }
+            )
+            .id(comment.id)
+            .environmentObject(viewModel.commentVotesViewModel)
+            .swipeActions {
+                Button {
+                    replyComment(comment)
+                } label: {
+                    Icon(image: R.image.replyDown.image, size: .medium)
+                }
+                .tint(.blue)
             }
         }
     }

@@ -37,7 +37,8 @@ struct InboxScreen: View {
                 return PostDetailsScreen(
                     viewModel: .init(
                         post: post,
-                        votes: []
+                        votes: [],
+                        scrollToComment: notification.comment_id
                     )
                 )
             }
