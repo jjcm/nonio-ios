@@ -14,10 +14,21 @@ struct InboxNotification: Decodable, Hashable {
     let parent: Int
     let edited: Bool
     let read: Bool
+    let post_type: String
+    let parent_content: String
 }
 
-
 extension InboxNotification {
+
+    var postImageURL: URL? {
+        guard postType == .image else { return nil }
+        return ImageURLGenerator.thumbnailImageURL(path: post)
+    }
+
+    var postType: Post.ContentType? {
+        .init(rawValue: post_type)
+    }
+
     enum ReplyType {
         case post
         case comment(id: Int)

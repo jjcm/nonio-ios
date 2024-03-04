@@ -54,6 +54,13 @@ class InboxViewModel: ObservableObject {
         let parser = QuillParser(style: style)
         return parser.parseQuillJS(json: model.content)
     }
+
+    func toParentContentQuillRenderObject(string: String) -> [QuillViewRenderObject] {
+        var style = DefaultQuillStyle()
+        style.textColor = .secondaryLabel
+        let parser = QuillParser(style: style)
+        return parser.parseQuillJS(json: string)
+    }
 }
 
 extension InboxNotification {

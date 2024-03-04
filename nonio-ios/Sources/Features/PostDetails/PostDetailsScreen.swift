@@ -3,7 +3,7 @@ import Kingfisher
 
 struct PostDetailsScreen: View {
     @EnvironmentObject var settings: AppSettings
-    @ObservedObject var viewModel: PostDetailsViewModel
+    @StateObject var viewModel: PostDetailsViewModel
     @State private var openURLViewModel = ShowInAppBrowserViewModel()
     @State private var selectedUser: String?
     @State private var showCommentEditor = false
@@ -88,6 +88,7 @@ struct PostDetailsScreen: View {
             contentWidth: UIScreen.main.bounds.width - 16 * 2,
             didTapOnURL: openURLViewModel.handleURL(_:)
         )
+        .showIf(!viewModel.postContent.isEmpty)
         .padding(.horizontal, 16)
         .padding(.bottom, 10)
     }

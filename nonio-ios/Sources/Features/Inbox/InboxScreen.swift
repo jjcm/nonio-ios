@@ -1,10 +1,12 @@
 import SwiftUI
+import Kingfisher
 
 struct InboxScreen: View {
     @StateObject var viewModel: InboxViewModel
     @State private var selectedUser: String?
     @State private var selectedNotification: InboxNotification?
     @EnvironmentObject var notificationDataTicker: NotificationUnreadTicker
+    @State private var openURLViewModel = ShowInAppBrowserViewModel()
 
     var body: some View {
         ZStack {
@@ -33,7 +35,6 @@ struct InboxScreen: View {
                 UserScreen(param: .user(user))
             }
             .navigationDestination(for: $selectedNotification) { notification in
-                let post = Post.make(from: notification)
                 return PostDetailsScreen(
                     viewModel: .init(
                         postURL: notification.post,
@@ -42,6 +43,7 @@ struct InboxScreen: View {
                     )
                 )
             }
+            .openURL(viewModel: openURLViewModel)
         }
         .onLoad {
             viewModel.fetch()
@@ -64,12 +66,16 @@ struct InboxScreen: View {
             )
             .padding(.vertical, 10)
 
+            if !model.parent_content.isEmpty {
+                parentContent(model.parent_content)
+            }
+
             QuillContentView(
                 contents: viewModel.toQuillRenderObject(model: model),
-                contentWidth: UIScreen.main.bounds.width - Layout.horizontalPadding * 2) { _ in
-                    // open link if needed
-                }
-                .padding(.bottom, 8)
+                contentWidth: UIScreen.main.bounds.width - Layout.horizontalPadding * 2,
+                didTapOnURL: openURLViewModel.handleURL(_:)
+            )
+            .padding(.bottom, 8)
 
             postLink(model: model)
                 .padding(.bottom, 10)
@@ -87,26 +93,45 @@ struct InboxScreen: View {
             selectedNotification = model
         } label: {
             HStack {
-                // todo: image
-                Image("")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-
+                if let imageURL = model.postImageURL {
+                    KFImage(imageURL)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 48)
+                        .clipped()
+                }
                 Text(model.post_title)
                     .foregroundColor(UIColor.label.color)
                     .font(.system(size: 14, weight: .medium))
+                    .padding(.leading, model.postImageURL == nil ? 16 : 0)
 
                 Spacer()
 
                 Icon(image: R.image.chevronRight.image, size: .small)
                     .foregroundColor(UIColor.secondaryLabel.color)
+                    .padding(.trailing, 16)
             }
-            .padding()
             .frame(height: 32)
             .background(UIColor.secondarySystemBackground.color)
             .cornerRadius(10)
         }
         .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    func parentContent(_ content: String) -> some View {
+        HStack {
+            Rectangle()
+                .fill(UIColor.opaqueSeparator.color)
+                .frame(width: 2)
+                .frame(maxHeight: .infinity)
+
+            QuillContentView(
+                contents: viewModel.toParentContentQuillRenderObject(string: content),
+                contentWidth: UIScreen.main.bounds.width - Layout.horizontalPadding * 2 - 10,
+                didTapOnURL: openURLViewModel.handleURL(_:)
+            )
+        }
     }
 }
 
