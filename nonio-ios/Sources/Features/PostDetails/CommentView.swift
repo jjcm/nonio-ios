@@ -4,23 +4,18 @@ import SwiftUI
 struct CommentView: View {
     @ObservedObject var comment: CommentModel
     @ObservedObject var commentVotesViewModel: CommentVotesViewModel
-    @State private var showHighlightedAnimation: Bool = false
     let showUpvoteCount: Bool
     let width: CGFloat
     let didTapOnURL: ((URL) -> Void)?
     let didTapUserProfileAction: ((String) -> Void)
-    let animationEnded: (() -> Void)
-    let showHighlightedAnimationValue: Bool
 
     init(
         comment: CommentModel,
         showUpvoteCount: Bool,
         width: CGFloat,
         commentVotesViewModel: CommentVotesViewModel,
-        showHighlightedAnimation: Bool,
         didTapOnURL: ((URL) -> Void)?,
-        didTapUserProfileAction: @escaping ((String) -> Void),
-        animationEnded: @escaping (() -> Void)
+        didTapUserProfileAction: @escaping ((String) -> Void)
     ) {
         self.comment = comment
         self.width = width
@@ -28,8 +23,6 @@ struct CommentView: View {
         self.didTapOnURL = didTapOnURL
         self.showUpvoteCount = showUpvoteCount
         self.didTapUserProfileAction = didTapUserProfileAction
-        self.showHighlightedAnimationValue = showHighlightedAnimation
-        self.animationEnded = animationEnded
     }
 
     var body: some View {
@@ -54,20 +47,6 @@ struct CommentView: View {
                 .frame(height: 0.5)
                 .background(UIColor.separator.color)
         }
-        .background(showHighlightedAnimation ? UIColor.secondarySystemBackground.color : .clear)
-        .onAppear {
-            if showHighlightedAnimationValue {
-                if #available(iOS 17.0, *) {
-                    withAnimation(.easeInOut(duration: 0.6), completionCriteria: .removed) {
-                        showHighlightedAnimation = true
-                    } completion: {
-                        showHighlightedAnimation = false
-                        animationEnded()
-                    }
-                }
-            }
-        }
-        .animation(.easeInOut, value: showHighlightedAnimation)
     }
 
     var userRow: some View {

@@ -115,7 +115,7 @@ private extension PostDetailsViewModel {
         rootComments
             .forEach { topLevelComment in
                 guard var comment = commentsDict[topLevelComment.id] else { return }
-                result.append(.init(comment: topLevelComment, level: 0))
+                result.append(comment)
                 attachChildren(to: &comment, level: 1)
             }
 

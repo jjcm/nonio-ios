@@ -8,7 +8,8 @@ struct PostDetailsScreen: View {
     @State private var selectedUser: String?
     @State private var showCommentEditor = false
     @State private var showEditorWithComment: Comment?
-    @State private var highlightAnimationEnded: Bool = false
+    @State private var commentAnimationHasShown: Bool = false
+    @State private var animationEnded: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -71,6 +72,7 @@ struct PostDetailsScreen: View {
                 }
                 .listStyle(.plain)
                 .onChange(of: viewModel.scrollToComment) { id in
+                    guard let id else { return }
                     withAnimation {
                         scrollProxy.scrollTo(id)
                     }
@@ -162,20 +164,31 @@ struct PostDetailsScreen: View {
     
     var commentsView: some View {
         ForEach(viewModel.commentViewModels) { comment in
+            let showAnimation = !commentAnimationHasShown && !animationEnded && viewModel.scrollToComment == comment.id
             CommentView(
                 comment: comment,
                 showUpvoteCount: true,
                 width: UIScreen.main.bounds.width - 2 * 16,
                 commentVotesViewModel: viewModel.commentVotesViewModel,
-                showHighlightedAnimation: !highlightAnimationEnded && viewModel.scrollToComment == comment.id,
                 didTapOnURL: openURLViewModel.handleURL(_:),
                 didTapUserProfileAction: { user in
                     didTapUserProfile(user: user)
-                },
-                animationEnded: {
-                    highlightAnimationEnded = true
                 }
             )
+            .background(showAnimation ? UIColor.secondarySystemBackground.color : .clear)
+            .onAppear {
+                let duration = 0.6
+                if showAnimation {
+                    withAnimation(.linear(duration: duration)) {
+                        commentAnimationHasShown = true
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+                        commentAnimationHasShown = false
+                        animationEnded = true
+                    }
+                }
+            }
+            .animation(.easeInOut, value: showAnimation)
             .id(comment.id)
             .environmentObject(viewModel.commentVotesViewModel)
             .swipeActions {
