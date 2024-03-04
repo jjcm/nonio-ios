@@ -9,15 +9,15 @@ final class CommentEditorViewModel: ObservableObject {
     private(set) var error: MoyaError?
     @Published var showError = false
     
-    let post: Post
+    let postURL: String
     let comment: Comment?
     let addCommentSuccess: (Comment) -> Void
     init(
-        post: Post,
+        postURL: String,
         comment: Comment?,
         addCommentSuccess: @escaping (Comment) -> Void
     ) {
-        self.post = post
+        self.postURL = postURL
         self.comment = comment
         self.addCommentSuccess = addCommentSuccess
     }
@@ -28,7 +28,7 @@ final class CommentEditorViewModel: ObservableObject {
         provider.requestPublisher(
             .addComment(
                 content: content,
-                post: post.url,
+                post: postURL,
                 parent: comment?.id
             )
         )

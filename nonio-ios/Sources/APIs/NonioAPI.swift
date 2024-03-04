@@ -4,16 +4,23 @@ import Combine
 
 enum NonioAPI {
     case getPosts(RequestParamsType)
+    case getPost(id: String)
     case getTags
     case getComments(id: String)
     case login(user: String, password: String)
     case userInfo(user: String)
+    
     case addVote(post: String, tag: String)
     case removeVote(post: String, tag: String)
     case getVotes
+
     case addCommentVote(commentID: Int, vote: Bool)
     case getCommentVotes(post: String)
     case addComment(content: String, post: String, parent: Int?)
+
+    case getNotifications(unread: Bool?)
+    case getNotificationsUnreadCount
+    case markNotificationRead(id: Int)
 }
 
 extension NonioAPI: TargetType, AccessTokenAuthorizable {
@@ -25,6 +32,8 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
         switch self {
         case .getPosts:
             return "posts"
+        case .getPost(let id):
+            return "posts/\(id)"
         case .getTags:
             return "tags"
         case .getComments:
@@ -45,14 +54,20 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             return "comment/add-vote"
         case .addComment:
             return "comment/create"
+        case .getNotifications:
+            return "notifications"
+        case .getNotificationsUnreadCount:
+            return "notifications/unread-count"
+        case .markNotificationRead:
+            return "notification/mark-read"
         }
     }
     
     var method: Moya.Method {
         switch self {
-        case .getPosts, .getTags, .getComments, .userInfo, .getVotes, .getCommentVotes:
+        case .getPosts, .getTags, .getComments, .userInfo, .getVotes, .getCommentVotes, .getNotifications, .getNotificationsUnreadCount, .getPost:
             return .get
-        case .login, .addVote, .removeVote, .addCommentVote, .addComment:
+        case .login, .addVote, .removeVote, .addCommentVote, .addComment, .markNotificationRead:
             return .post
         }
     }
@@ -66,7 +81,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             )
         case .getComments(let id):
             return .requestParameters(parameters: ["post": id], encoding: URLEncoding.default)
-        case .getTags, .userInfo, .getVotes:
+        case .getTags, .userInfo, .getVotes, .getNotificationsUnreadCount, .getPost:
             return .requestPlain
         case .login(let user, let password):
             let params = [
@@ -94,6 +109,13 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             ]
             params["parent"] = parent
             return .requestParameters(parameters: params, encoding: JSONEncoding.default)
+        case .getNotifications(let unread):
+            var params: [String: Any] = [:]
+            params["unread"] = unread
+            return .requestParameters(parameters: params, encoding: URLEncoding.default)
+        case .markNotificationRead(let id):
+            return .requestParameters(parameters: ["id": id], encoding: JSONEncoding.default)
+
         }
     }
     
@@ -107,7 +129,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
     
     var authorizationType: AuthorizationType? {
         switch self {
-        case .userInfo, .getVotes, .addVote, .removeVote, .getCommentVotes, .addCommentVote, .addComment:
+        case .userInfo, .getVotes, .addVote, .removeVote, .getCommentVotes, .addCommentVote, .addComment, .getNotifications, .getNotificationsUnreadCount, .markNotificationRead:
             return .bearer
         default:
             return nil

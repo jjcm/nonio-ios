@@ -1,14 +1,15 @@
 import SwiftUI
 import Kingfisher
 
-
 struct PostDetailsScreen: View {
     @EnvironmentObject var settings: AppSettings
-    @ObservedObject var viewModel: PostDetailsViewModel
+    @StateObject var viewModel: PostDetailsViewModel
     @State private var openURLViewModel = ShowInAppBrowserViewModel()
     @State private var selectedUser: String?
     @State private var showCommentEditor = false
     @State private var showEditorWithComment: Comment?
+    @State private var commentAnimationHasShown: Bool = false
+    @State private var animationEnded: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -25,7 +26,7 @@ struct PostDetailsScreen: View {
             .navigationTitle("Posts")
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Text(viewModel.title)
+                    Text(viewModel.post?.detailsTitle ?? "")
                         .font(.headline)
                         .foregroundColor(.secondary)
                 }
@@ -36,31 +37,45 @@ struct PostDetailsScreen: View {
             viewModel.commentVotesViewModel.fetchCommentVotes(hasLoggedIn: settings.hasLoggedIn)
         }
         .sheet(isPresented: $showCommentEditor) {
-            commentView(nil)
+            commentEditorView(nil)
         }
         .sheet(item: $showEditorWithComment) { comment in
-            commentView(comment)
+            commentEditorView(comment)
         }
     }
     
     var content: some View {
         VStack(alignment: .leading) {
-            ScrollView {
-                VStack(alignment: .leading) {
-                    if let type = viewModel.post.type {
-                        mediaView(type: type)
+            ScrollViewReader { scrollProxy in
+                List {
+                    if let post = viewModel.post {
+                        mediaView(post: post)
+                            .plainListItem()
+                        linkView(post: post)
+                            .plainListItem()
+                        userView(post: post)
+                            .plainListItem()
+                        postContent
+                            .plainListItem()
+                        tagsView(post: post)
+                            .plainListItem()
+
+                        Divider()
+                            .frame(height: 1)
+                            .background(UIColor.separator.color)
+
+                        commentButton
+                            .plainListItem()
+                        commentsView
+                            .plainListItem()
                     }
-                    linkView
-                    userView
-                    postContent
-                    tagsView
-                    
-                    Divider()
-                        .frame(height: 1)
-                        .background(UIColor.separator.color)
-                    
-                    commentButton
-                    commentsView
+                }
+                .listStyle(.plain)
+                .onChange(of: viewModel.scrollToComment) { id in
+                    guard let id else { return }
+                    withAnimation {
+                        scrollProxy.scrollTo(id)
+                    }
                 }
             }
         }
@@ -75,6 +90,7 @@ struct PostDetailsScreen: View {
             contentWidth: UIScreen.main.bounds.width - 16 * 2,
             didTapOnURL: openURLViewModel.handleURL(_:)
         )
+        .showIf(!viewModel.postContent.isEmpty)
         .padding(.horizontal, 16)
         .padding(.bottom, 10)
     }
@@ -87,84 +103,101 @@ struct PostDetailsScreen: View {
     }
     
     @ViewBuilder
-    func mediaView(type: Post.ContentType) -> some View {
-        switch type {
+    func mediaView(post: Post) -> some View {
+        switch post.type {
         case .image:
-            if let imageURL = viewModel.imageURL {
+            if let imageURL = post.imageURL {
                 KFImage(imageURL)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: viewModel.mediaSize.width)
-                    .frame(height: viewModel.mediaSize.height, alignment: .center)
+                    .frame(width: post.mediaSize.width)
+                    .frame(height: post.mediaSize.height, alignment: .center)
                     .clipped()
-                    .showIf(viewModel.shouldShowImage)
+                    .showIf(post.shouldShowImage)
             }
         case .video:
-            if let videoURL = viewModel.videoURL {
+            if let videoURL = post.videoURL {
                 PostVideoPlayerView(url: videoURL)
-                    .frame(width: viewModel.mediaSize.width)
-                    .frame(height: viewModel.mediaSize.height)
+                    .frame(width: post.mediaSize.width)
+                    .frame(height: post.mediaSize.height)
             }
         default:
             EmptyView()
         }
     }
     
-    var linkView: some View {
-        LinkView(urlString: viewModel.linkString) {
-            guard let url = viewModel.post.link else { return }
+    @ViewBuilder
+    func linkView(post: Post) -> some View {
+        LinkView(urlString: post.linkString) {
+            guard let url = post.link else { return }
             openURLViewModel.handleURL(url)
         }
         .padding(.horizontal, 16)
-        .showIf(viewModel.shouldShowLink)
+        .showIf(post.shouldShowLink)
     }
     
-    var userView: some View {
+    @ViewBuilder
+    func userView(post: Post) -> some View {
         PostUserView(
-            viewModel: .init(
-                post: viewModel.post,
-                showUpvoteCount: true
-            ),
-            commentVotesViewModel: viewModel.commentVotesViewModel,
+            viewModel: .init(post: post),
+            commentVotesViewModel: CommentVotesViewModel(postURL: post.url),
             didTapUserProfileAction: {
-                didTapUserProfile(user: viewModel.post.user)
+                didTapUserProfile(user: post.user)
             }
         )
         .padding(.top, 10)
         .padding(.horizontal, 16)
-        .environmentObject(viewModel.commentVotesViewModel)
     }
     
-    var tagsView: some View {
+    @ViewBuilder
+    func tagsView(post: Post) -> some View {
         HorizontalTagsScrollView(
-            post: viewModel.post.url,
-            tags: viewModel.post.tags,
+            post: post.url,
+            tags: post.tags,
             votes: viewModel.votes,
             style: .init(height: 28, textColor: .blue)
         )
         .padding(.horizontal, 16)
         .padding(.bottom, 10)
-        .showIf(viewModel.shouldShowTags)
+        .showIf(post.shouldShowTags)
     }
     
     var commentsView: some View {
-        VStack {
-            ForEach(viewModel.commentViewModels) { comment in
-                CommentView(
-                    comment: comment,
-                    showUpvoteCount: true,
-                    width: UIScreen.main.bounds.width - 2 * 16,
-                    commentVotesViewModel: viewModel.commentVotesViewModel,
-                    didTapOnURL: openURLViewModel.handleURL(_:),
-                    didTapUserProfileAction: { user in
-                        didTapUserProfile(user: user)
-                    },
-                    replyAction: { comment in
-                        replyComment(comment)
+        ForEach(viewModel.commentViewModels) { comment in
+            let showAnimation = !commentAnimationHasShown && !animationEnded && viewModel.scrollToComment == comment.id
+            CommentView(
+                comment: comment,
+                showUpvoteCount: true,
+                width: UIScreen.main.bounds.width - 2 * 16,
+                commentVotesViewModel: viewModel.commentVotesViewModel,
+                didTapOnURL: openURLViewModel.handleURL(_:),
+                didTapUserProfileAction: { user in
+                    didTapUserProfile(user: user)
+                }
+            )
+            .background(showAnimation ? UIColor.secondarySystemBackground.color : .clear)
+            .onAppear {
+                let duration = 1.2
+                if showAnimation {
+                    withAnimation(.linear(duration: duration)) {
+                        commentAnimationHasShown = true
                     }
-                )
-                .padding(.leading, 16)
-                .environmentObject(viewModel.commentVotesViewModel)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+                        commentAnimationHasShown = false
+                        animationEnded = true
+                    }
+                }
+            }
+            .animation(.easeInOut, value: showAnimation)
+            .id(comment.id)
+            .environmentObject(viewModel.commentVotesViewModel)
+            .swipeActions {
+                Button {
+                    replyComment(comment)
+                } label: {
+                    Icon(image: R.image.replyDown.image, size: .medium)
+                }
+                .tint(.blue)
             }
         }
     }
@@ -176,8 +209,8 @@ struct PostDetailsScreen: View {
     }
     
     @ViewBuilder
-    func commentView(_ comment: Comment?) -> some View {
-        CommentEditorScreen(post: viewModel.post, comment: comment) { comment in
+    func commentEditorView(_ comment: Comment?) -> some View {
+        CommentEditorScreen(postURL: viewModel.postURL, comment: comment) { comment in
             showCommentEditor = false
             showEditorWithComment = nil
             viewModel.onLoad()
