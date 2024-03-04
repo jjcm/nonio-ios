@@ -177,7 +177,7 @@ struct PostDetailsScreen: View {
             )
             .background(showAnimation ? UIColor.secondarySystemBackground.color : .clear)
             .onAppear {
-                let duration = 0.6
+                let duration = 1.2
                 if showAnimation {
                     withAnimation(.linear(duration: duration)) {
                         commentAnimationHasShown = true

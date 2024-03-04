@@ -40,6 +40,7 @@ struct CommentView: View {
                 )
                 .padding(.leading, leading)
                 .padding(.vertical, 12)
+                .showIf(!comment.isCollapsed)
             }
             .padding(.horizontal, 16)
 
@@ -47,6 +48,7 @@ struct CommentView: View {
                 .frame(height: 0.5)
                 .background(UIColor.separator.color)
         }
+        .showIf(!comment.hide)
     }
 
     var userRow: some View {
@@ -67,10 +69,8 @@ struct CommentView: View {
         .padding(.bottom, 14)
         .contentShape(Rectangle())
         .onLongPressGesture {
-            withAnimation {
-                if !comment.isLeaf {
-                    comment.isCollapsed.toggle()
-                }
+            if !comment.isLeaf {
+                comment.isCollapsed.toggle()
             }
         }
     }
