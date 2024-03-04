@@ -54,8 +54,7 @@ struct PostsScreen: View {
                     PostDetailsScreen(
                         viewModel: .init(
                             postURL: post.url,
-                            votes: viewModel.votes,
-                            provider: viewModel.provider
+                            votes: viewModel.votes
                         )
                     )
                 }

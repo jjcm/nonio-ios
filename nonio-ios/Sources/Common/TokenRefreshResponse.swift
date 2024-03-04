@@ -1,7 +1,6 @@
 import Foundation
 
-struct LoginResponse: Codable, Equatable {
+struct TokenRefreshResponse: Decodable {
     let accessToken: String
     let refreshToken: String
-    let username: String
 }

@@ -21,19 +21,17 @@ final class PostDetailsViewModel: ObservableObject {
 
     let postURL: String
     private let parser = QuillParser()
-    private let provider: MoyaProvider<NonioAPI>
+    private let provider = NonioProvider.default
     private var cancellables: Set<AnyCancellable> = []
     private let scrollToCommentID: Int?
 
     init(
         postURL: String,
         votes: [Vote],
-        scrollToComment: Int? = nil,
-        provider: MoyaProvider<NonioAPI> = .defaultProvider
+        scrollToComment: Int? = nil
     ) {
         self.postURL = postURL
         self.votes = votes
-        self.provider = provider
         self.scrollToCommentID = scrollToComment
     }
     

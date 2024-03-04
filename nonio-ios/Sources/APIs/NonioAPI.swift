@@ -2,12 +2,18 @@ import Foundation
 import Moya
 import Combine
 
-enum NonioAPI {
+
+public protocol AuthTargetType: TargetType {
+    var needAuthenticate: Bool { get }
+}
+
+enum NonioAPI: AuthTargetType {
     case getPosts(RequestParamsType)
     case getPost(id: String)
     case getTags
     case getComments(id: String)
     case login(user: String, password: String)
+    case refreshAccessToken(refreshToken: String)
     case userInfo(user: String)
     
     case addVote(post: String, tag: String)
@@ -60,6 +66,8 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             return "notifications/unread-count"
         case .markNotificationRead:
             return "notification/mark-read"
+        case .refreshAccessToken:
+            return "user/refresh-access-token"
         }
     }
     
@@ -67,7 +75,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
         switch self {
         case .getPosts, .getTags, .getComments, .userInfo, .getVotes, .getCommentVotes, .getNotifications, .getNotificationsUnreadCount, .getPost:
             return .get
-        case .login, .addVote, .removeVote, .addCommentVote, .addComment, .markNotificationRead:
+        case .login, .addVote, .removeVote, .addCommentVote, .addComment, .markNotificationRead, .refreshAccessToken:
             return .post
         }
     }
@@ -115,7 +123,8 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             return .requestParameters(parameters: params, encoding: URLEncoding.default)
         case .markNotificationRead(let id):
             return .requestParameters(parameters: ["id": id], encoding: JSONEncoding.default)
-
+        case .refreshAccessToken(let refreshToken):
+            return .requestParameters(parameters: ["refreshToken": refreshToken], encoding: JSONEncoding.default)
         }
     }
     
@@ -140,6 +149,15 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
         switch self {
         default:
             return Data()
+        }
+    }
+
+    var needAuthenticate: Bool {
+        switch self {
+        case .addCommentVote, .addVote, .removeVote, .getNotificationsUnreadCount, .getNotifications, .markNotificationRead, .getCommentVotes:
+            return true
+        default:
+            return false
         }
     }
 }

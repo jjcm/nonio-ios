@@ -7,7 +7,7 @@ class InboxViewModel: ObservableObject {
     @Published private(set) var models: [InboxNotification] = []
     @Published private(set) var loading = true
     @Published private(set) var unreadCountUpdated: Int?
-    private let provider = MoyaProvider.defaultProvider
+    private let provider = NonioProvider.default
     private var cancellables: Set<AnyCancellable> = []
     private let parser = QuillParser()
 

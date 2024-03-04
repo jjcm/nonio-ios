@@ -6,7 +6,7 @@ final class CommentVotesViewModel: ObservableObject {
     
     @Published private(set) var commentVotes: [CommentVote] = []
     private var votingMap: [Int: Bool] = [:]
-    private let provider: MoyaProvider<NonioAPI> = .defaultProvider
+    private let provider = NonioProvider.default
     private var cancellables: Set<AnyCancellable> = []
     
     let postURL: String

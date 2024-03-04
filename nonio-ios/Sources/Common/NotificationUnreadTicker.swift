@@ -5,7 +5,7 @@ import Moya
 class NotificationUnreadTicker: ObservableObject {
     @Published private(set) var unreadCount: Int = 0
 
-    private let provider = MoyaProvider.defaultProvider
+    private let provider = NonioProvider.default
     private var cancellables = Set<AnyCancellable>()
     private let tickerInterval: TimeInterval = 20
 

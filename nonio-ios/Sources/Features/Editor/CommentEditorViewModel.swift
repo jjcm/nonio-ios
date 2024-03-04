@@ -3,7 +3,7 @@ import Moya
 import Combine
 
 final class CommentEditorViewModel: ObservableObject {
-    private let provider: MoyaProvider<NonioAPI> = .defaultProvider
+    private let provider = NonioProvider.default
     private var cancellables: Set<AnyCancellable> = []
     @Published private(set) var loading = false
     private(set) var error: MoyaError?
