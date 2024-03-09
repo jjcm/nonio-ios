@@ -10,7 +10,7 @@ public protocol AuthTargetType: TargetType {
 enum NonioAPI: AuthTargetType {
     case getPosts(RequestParamsType)
     case getPost(id: String)
-    case getTags
+    case getTags(query: String?)
     case getComments(id: String)
     case login(user: String, password: String)
     case refreshAccessToken(refreshToken: String)
@@ -40,8 +40,8 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             return "posts"
         case .getPost(let id):
             return "posts/\(id)"
-        case .getTags:
-            return "tags"
+        case .getTags(let query):
+            return "tags/\(query ?? "")"
         case .getComments:
             return "comments"
         case .login:

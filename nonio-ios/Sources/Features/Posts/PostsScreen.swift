@@ -8,7 +8,8 @@ struct PostsScreen: View {
     @State private var showSortActionSheet = false
     @State private var selectedUser: String?
     @State private var selectedPost: Post?
-    
+    @State private var showTagsSearchView = false
+
     var body: some View {
         ZStack {
             content
@@ -58,6 +59,14 @@ struct PostsScreen: View {
                         )
                     )
                 }
+                .sheet(isPresented: $showTagsSearchView, content: {
+                    SearchScreen { tag in
+                        showTagsSearchView = false
+                        if let tag {
+                            self.viewModel.onSelectTag(tag)
+                        }
+                    }
+                })
             }
         }
         .onChange(of: settings.hasLoggedIn, perform: { hasLoggedIn in
@@ -110,10 +119,18 @@ struct PostsScreen: View {
         }
         
         ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                showSortActionSheet = true
-            } label: {
-                Icon(image: R.image.sort.image, size: .medium)
+            HStack {
+                Button {
+                    showTagsSearchView = true
+                } label: {
+                    Icon(image: Image(systemName: "magnifyingglass"), size: .small)
+                }
+                
+                Button {
+                    showSortActionSheet = true
+                } label: {
+                    Icon(image: R.image.sort.image, size: .medium)
+                }
             }
         }
     }
