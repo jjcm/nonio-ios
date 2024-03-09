@@ -53,9 +53,8 @@ struct PostsScreen: View {
                 .navigationDestination(for: $selectedPost) { post in
                     PostDetailsScreen(
                         viewModel: .init(
-                            post: post,
-                            votes: viewModel.votes,
-                            provider: viewModel.provider
+                            postURL: post.url,
+                            votes: viewModel.votes
                         )
                     )
                 }

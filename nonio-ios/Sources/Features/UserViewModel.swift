@@ -34,8 +34,8 @@ final class UserViewModel: ObservableObject {
     let param: UserViewParamType
     
     private let keychainService: KeychainServiceType
-    private let provider = MoyaProvider.defaultProvider
-    
+    private let provider =  NonioProvider.default
+
     private var cancellables: Set<AnyCancellable> = []
     
     init(

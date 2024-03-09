@@ -14,7 +14,6 @@ struct Post: Codable {
     let tags: [PostTag]
     let width: CGFloat?
     let height: CGFloat?
-    
     let date: Date
     
     init(from decoder: Decoder) throws {
@@ -89,4 +88,23 @@ struct PostTag: Codable {
     let tag: String
     let tagID: Int
     var score: Int
+}
+
+extension Post {
+    static func make(from notification: InboxNotification) -> Self {
+        return .init(
+            id: -1,
+            title: notification.post_title,
+            user: notification.user,
+            time: Double(notification.date),
+            url: notification.post,
+            link: nil,
+            type: .text,
+            content: notification.content,
+            score: notification.upvotes,
+            commentCount: 0,
+            tags: [],
+            date: Date(timeIntervalSince1970: TimeInterval(notification.date / 1000))
+        )
+    }
 }

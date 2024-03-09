@@ -49,8 +49,8 @@ struct PostRowView: View {
     
     var userView: some View {
         PostUserView(
-            viewModel: .init(post: viewModel.post, showUpvoteCount: true),
-            commentVotesViewModel: .init(post: viewModel.post),
+            viewModel: .init(post: viewModel.post),
+            commentVotesViewModel: .init(postURL: viewModel.post.url),
             didTapUserProfileAction: {
                 didTapUserProfileAction()
             }

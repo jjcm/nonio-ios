@@ -7,7 +7,7 @@ final class PostTagViewModel: ObservableObject {
     @Published private(set) var votes: [Vote]
         
     let post: String
-    let provider = MoyaProvider.defaultProvider
+    let provider = NonioProvider.default
     private var cancellables: Set<AnyCancellable> = []
     private var votingMap: [Int: Bool] = [:]
 

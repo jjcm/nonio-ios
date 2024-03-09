@@ -26,7 +26,7 @@ class PostsViewModel: ObservableObject {
     }
     private(set) var getPostParams: GetPostParams = .all
     private var cancellables: Set<AnyCancellable> = []
-    let provider = MoyaProvider.defaultProvider
+    let provider = NonioProvider.default
     let user: String?
     
     init(user: String? = nil) {
