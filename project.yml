@@ -14,9 +14,6 @@ packages:
   KeychainAccess:
     url: https://github.com/kishikawakatsumi/KeychainAccess.git
     from: 4.2.2
-  SwipeActions:
-    url: https://github.com/aheze/SwipeActions.git
-    from: 1.1.0
 targets:
   nonio-ios:
     type: application
@@ -30,7 +27,6 @@ targets:
         product: RswiftLibrary
       - package: Kingfisher
       - package: KeychainAccess
-      - package: SwipeActions
     buildToolPlugins:
       - plugin: RswiftGenerateInternalResources
         package: Rswift

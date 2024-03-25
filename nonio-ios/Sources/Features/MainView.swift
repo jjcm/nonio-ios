@@ -4,6 +4,7 @@ import Kingfisher
 struct MainView: View {
     struct TabItemTag {
         static let posts = 1
+        static let inbox = 2
         static let user = 3
         static let login = 4
         static let other = 5
@@ -11,7 +12,8 @@ struct MainView: View {
 
     @State private var selection = TabItemTag.posts
     @EnvironmentObject var settings: AppSettings
-    
+    @EnvironmentObject var notificationDataTicker: NotificationUnreadTicker
+
     var body: some View {
         TabView(selection: $selection) {
             PostsScreen(viewModel: PostsViewModel())
@@ -20,12 +22,13 @@ struct MainView: View {
                 }
                 .tag(TabItemTag.posts)
             
-            InboxScreen()
+            InboxScreen(viewModel: InboxViewModel())
                 .tabItem {
                     makeTabItem(title: "Inbox", image: R.image.tabsInbox.image)
                 }
-                .tag(TabItemTag.other)
-            
+                .tag(TabItemTag.inbox)
+                .badge(notificationDataTicker.unreadCount)
+
             SubmitScreen()
                 .tabItem {
                     makeTabItem(title: "Submit", image: R.image.tabsSubmit.image)
@@ -49,8 +52,8 @@ struct MainView: View {
                 .tag(TabItemTag.other)
         }
         .onChange(of: selection) { selectedTab in
-            if selectedTab == TabItemTag.user || selectedTab == TabItemTag.login {
-                
+            if selectedTab == TabItemTag.user || selectedTab == TabItemTag.login || selectedTab == TabItemTag.inbox {
+
             } else {
                 // Restrict tab selection to only the first tab, disabling others.
                 selection = TabItemTag.posts

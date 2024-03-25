@@ -6,12 +6,12 @@ final class CommentVotesViewModel: ObservableObject {
     
     @Published private(set) var commentVotes: [CommentVote] = []
     private var votingMap: [Int: Bool] = [:]
-    private let provider: MoyaProvider<NonioAPI> = .defaultProvider
+    private let provider = NonioProvider.default
     private var cancellables: Set<AnyCancellable> = []
     
-    let post: Post
-    init(post: Post) {
-        self.post = post
+    let postURL: String
+    init(postURL: String) {
+        self.postURL = postURL
     }
     
     func fetchCommentVotes(hasLoggedIn: Bool) {
@@ -20,7 +20,7 @@ final class CommentVotesViewModel: ObservableObject {
             return
         }
         
-        provider.requestPublisher(.getCommentVotes(post: post.url))
+        provider.requestPublisher(.getCommentVotes(post: postURL))
             .map([CommentVote].self, atKeyPath: "commentVotes")
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in

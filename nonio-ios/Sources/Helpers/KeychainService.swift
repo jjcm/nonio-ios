@@ -25,4 +25,15 @@ final class KeychainService: KeychainServiceType {
     func deleteUser() throws {
         try keychain.remove(userKey)
     }
+
+    func updateAccessToken(_ token: String, refreshToken: String) throws {
+        guard let user = try getUser() else { return }
+        try saveUser(
+            .init(
+                accessToken: token,
+                refreshToken: refreshToken,
+                username: user.username
+            )
+        )
+    }
 }
