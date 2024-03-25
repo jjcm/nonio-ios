@@ -2,10 +2,13 @@ import SwiftUI
 
 struct SearchScreen: View {
     @ObservedObject private var viewModel = SearchViewModel()
+    @FocusState private var isInputActive: Bool
 
     let onSelect: ((Tag?) -> Void)
-    init(onSelect: @escaping (Tag?) -> Void) {
+    let onCancel: (() -> Void)
+    init(onSelect: @escaping (Tag?) -> Void, onCancel: @escaping () -> Void) {
         self.onSelect = onSelect
+        self.onCancel = onCancel
     }
 
     var body: some View {
@@ -16,6 +19,7 @@ struct SearchScreen: View {
                 .padding(.horizontal, 25)
                 .background(UIColor.tertiarySystemBackground.color)
                 .cornerRadius(8)
+                .focused($isInputActive)
                 .overlay(
                     HStack {
                         Image(systemName: "magnifyingglass")
@@ -34,11 +38,20 @@ struct SearchScreen: View {
                         }
                     }
                 )
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        self.isInputActive = true
+                    }
+                }
                 .padding(.horizontal, 16)
 
                 List(viewModel.tags, id: \.tag) { tag in
                     Button {
                         viewModel.selectedTag = tag
+                        Task {
+                            try await Task.sleep(seconds: 0.5)
+                            onSelect(tag)
+                        }
                     } label: {
                         SearchResultRow(text: tag.tag, searchText: viewModel.searchText, selected: viewModel.selectedTag == tag)
                     }
@@ -47,9 +60,9 @@ struct SearchScreen: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        onSelect(viewModel.selectedTag)
+                        onCancel()
                     } label: {
-                        Text("OK")
+                        Text("Cancel")
                             .font(.headline)
                             .foregroundColor(.blue)
                     }

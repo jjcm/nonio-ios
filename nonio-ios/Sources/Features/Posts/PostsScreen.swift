@@ -65,6 +65,8 @@ struct PostsScreen: View {
                         if let tag {
                             self.viewModel.onSelectTag(tag)
                         }
+                    } onCancel: {
+                        showTagsSearchView = false
                     }
                 })
             }
