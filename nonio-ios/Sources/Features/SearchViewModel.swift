@@ -5,7 +5,6 @@ import Moya
 class SearchViewModel: ObservableObject {
     @Published var searchText = ""
     @Published private(set) var tags: [Tag] = []
-    @Published var selectedTag: Tag?
     private var cancellables = Set<AnyCancellable>()
     @Published private(set) var loading = true
     private let provider = MoyaProvider<NonioAPI>(plugins: [NetworkLoggerPlugin()])

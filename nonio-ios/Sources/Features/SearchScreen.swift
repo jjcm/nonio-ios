@@ -47,13 +47,9 @@ struct SearchScreen: View {
 
                 List(viewModel.tags, id: \.tag) { tag in
                     Button {
-                        viewModel.selectedTag = tag
-                        Task {
-                            try await Task.sleep(seconds: 0.5)
-                            onSelect(tag)
-                        }
+                        onSelect(tag)
                     } label: {
-                        SearchResultRow(text: tag.tag, searchText: viewModel.searchText, selected: viewModel.selectedTag == tag)
+                        SearchResultRow(text: tag.tag, searchText: viewModel.searchText)
                     }
                 }
             }

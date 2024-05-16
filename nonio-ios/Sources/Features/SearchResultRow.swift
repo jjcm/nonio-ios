@@ -3,7 +3,6 @@ import SwiftUI
 struct SearchResultRow: View {
     var text: String
     var searchText: String
-    var selected: Bool
 
     private var highlightedParts: [(String, Bool)] { // (Text Part, IsHighlighted)
         guard !searchText.isEmpty else {
@@ -38,13 +37,6 @@ struct SearchResultRow: View {
                 Text(highlightedParts[index].0)
                     .foregroundColor(highlightedParts[index].1 ? UIColor.label.color : UIColor.secondaryLabel.color)
                     .fontWeight(highlightedParts[index].1 ? .bold : .regular)
-            }
-
-            Spacer()
-            if selected {
-                Image(systemName: "checkmark")
-                    .renderingMode(.template)
-                    .foregroundStyle(.green)
             }
         }
     }
