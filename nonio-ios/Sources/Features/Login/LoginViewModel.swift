@@ -18,9 +18,14 @@ final class LoginViewModel: ObservableObject {
     private var cancellables: Set<AnyCancellable> = []
     private let provider = MoyaProvider<NonioAPI>(plugins: [NetworkLoggerPlugin()])
     private let keychainService: KeychainServiceType
+    private let notificationCenter: NotificationCenter
 
-    init(keychainService: KeychainServiceType = KeychainService()) {
+    init(
+        keychainService: KeychainServiceType = KeychainService(),
+        notificationCenter: NotificationCenter = .default
+    ) {
         self.keychainService = keychainService
+        self.notificationCenter = notificationCenter
 
         Publishers
             .CombineLatest($email, $password)
@@ -48,6 +53,7 @@ final class LoginViewModel: ObservableObject {
                 self.loading = false
             }, receiveValue: { response in
                 self.handleResponse(response)
+                self.notificationCenter.post(name: .UserDidLogin, object: nil)
             })
             .store(in: &cancellables)
     }
