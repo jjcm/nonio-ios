@@ -2,6 +2,14 @@ import Foundation
 
 final class PostUserViewModel: ObservableObject {
 
+    enum ModelType {
+        case user
+        case comment
+        case post
+    }
+
+    let modelType: ModelType
+
     var dateString: String? {
         let df = DateFormatter.dateComponents
         return df.string(from: date, to: .now)
@@ -15,13 +23,35 @@ final class PostUserViewModel: ObservableObject {
     let showCommentCount: Bool
     let showUpvoteCount: Bool
     
-    let user: String
+    var actionText: String? {
+        switch modelType {
+        case .user:
+            return nil
+        case .comment:
+            return "replied to your post"
+        case .post:
+            return "replied to your comment"
+        }
+    }
+
+    var read: Bool = false
+
+    var isReply: Bool {
+        switch modelType {
+        case .user:
+            return false
+        case .comment, .post:
+            return true
+        }
+    }
+
     var upvotesString: String?
     
     private let calendar: Calendar
     private let commentCount: Int
     private let date: Date
-    
+    let user: String
+
     init(
         comment: Comment,
         upvotesString: String,
@@ -36,19 +66,25 @@ final class PostUserViewModel: ObservableObject {
         self.showCommentCount = false
         self.showUpvoteCount = showUpvoteCount
         self.commentID = comment.id
+        self.modelType = .user
     }
     
     init(
         post: Post,
-        showUpvoteCount: Bool,
-        calendar: Calendar = .current
+        showUpvoteCount: Bool = true,
+        showCommentCount: Bool = true,
+        calendar: Calendar = .current,
+        modelType: ModelType = .user,
+        read: Bool = false
     ) {
         self.user = post.user
         self.commentCount = post.commentCount
         self.date = post.date
         self.calendar = calendar
-        self.showCommentCount = true
+        self.showCommentCount = showCommentCount
         self.showUpvoteCount = showUpvoteCount
         self.upvotesString = "\(post.score) \(post.score > 1 ? "votes" : "vote")"
+        self.modelType = modelType
+        self.read = read
     }
 }

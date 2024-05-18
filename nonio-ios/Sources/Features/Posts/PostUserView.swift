@@ -44,12 +44,24 @@ struct PostUserView: View {
                         .clipShape(Circle())
                         .layoutPriority(1)
                     
-                    Text(viewModel.user)
-                        .foregroundColor(.primary)
-                        .lineLimit(1)
+                    HStack {
+                        Text(viewModel.user)
+                            .foregroundColor(UIColor.label.color)
+                            .fontWeight(viewModel.isReply ? .semibold : .regular)
+                            .lineLimit(2)
+
+                        if let userText = viewModel.actionText {
+                            Text(userText)
+                                .foregroundColor(viewModel.read ? UIColor.secondaryLabel.color : UIColor.label.color)
+                                .fontWeight(viewModel.isReply ? .semibold : .regular)
+                                .lineLimit(2)
+                        }
+                    }
+
                 }
             }
-            
+            .buttonStyle(.plain)
+
             Spacer()
             
             HStack(spacing: 12) {
@@ -57,14 +69,16 @@ struct PostUserView: View {
                 Button {
                     upvoteAction?()
                 } label: {
-                    if settings.hasLoggedIn {
-                        Icon(image: R.image.upvote.image, size: .small)
-                            .foregroundStyle(voted ? Style.votedColor : Style.normalTextColor)
-                            .showIf(settings.hasLoggedIn && upvoteAction != nil)
-                    }
-                    if let upvotesString = viewModel.upvotesString {
-                        Text(upvotesString)
-                            .foregroundStyle(Style.normalTextColor)
+                    HStack {
+                        if settings.hasLoggedIn {
+                            Icon(image: R.image.upvote.image, size: .small)
+                                .foregroundStyle(voted ? Style.votedColor : Style.normalTextColor)
+                                .showIf(settings.hasLoggedIn && upvoteAction != nil)
+                        }
+                        if let upvotesString = viewModel.upvotesString {
+                            Text(upvotesString)
+                                .foregroundStyle(Style.normalTextColor)
+                        }
                     }
                 }
                 .disabled(upvoteAction == nil || voted)

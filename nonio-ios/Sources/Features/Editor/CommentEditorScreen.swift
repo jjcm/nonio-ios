@@ -10,13 +10,13 @@ struct CommentEditorScreen: View {
     
     let didCancel: (() -> Void)
     init(
-        post: Post,
+        postURL: String,
         comment: Comment?,
         addCommentSuccess: @escaping (Comment) -> Void,
         didCancel: @escaping () -> Void
     ) {
         self.viewModel = .init(
-            post: post,
+            postURL: postURL,
             comment: comment,
             addCommentSuccess: addCommentSuccess
         )

@@ -15,24 +15,22 @@ struct QuillContentView: View {
     }
     
     var body: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 0) {
-                ForEach(contents) { object in
-                    let width = getTextWidth(object: object)
-                    
-                    HStack(alignment: .center) {
-                        quoteBlock
-                            .showIf(object.isQuote)
+        LazyVStack(alignment: .leading, spacing: 0) {
+            ForEach(contents) { object in
+                let width = getTextWidth(object: object)
 
-                        QuillLabel(
-                            content: object.content,
-                            width: UIScreen.main.bounds.width, 
-                            didTapOnURL: didTapOnURL
-                        )
-                        .frame(height: object.calculateContentHeight(containerWidth: width))
-                        .frame(width: contentWidth)
-                    }
+                HStack(alignment: .center) {
+                    quoteBlock
+                        .showIf(object.isQuote)
+
+                    QuillLabel(
+                        content: object.content,
+                        width: width,
+                        didTapOnURL: didTapOnURL
+                    )
+                    .frame(height: object.calculateContentHeight(containerWidth: width))
                 }
+                .frame(width: contentWidth)
             }
         }
     }
@@ -52,7 +50,7 @@ extension QuillContentView {
     }
     
     func getTextWidth(object: QuillViewRenderObject) -> CGFloat {
-        let quoteLeading = object.isQuote ? Layout.blockquoteLeadingMargin : 0
+        let quoteLeading = object.isQuote ? Layout.blockquoteLeadingMargin * 2 : 0
         return contentWidth - quoteLeading
     }
 }

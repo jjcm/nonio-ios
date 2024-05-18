@@ -2,13 +2,28 @@ import Foundation
 
 final class CommentModel: Identifiable, ObservableObject {
     @Published private(set) var comment: Comment
-    @Published var isCollapsed = false
+    @Published var isCollapsed = false {
+        didSet {
+            if isCollapsed {
+            }
+            for child in children {
+                child.hide = isCollapsed
+            }
+        }
+    }
+    @Published var hide: Bool = false
     @Published var upvotesString: String = ""
-    
+
+    let level: Int
+
     var id: Int {
         comment.id
     }
-        
+
+    var isLeaf: Bool {
+        children.isEmpty
+    }
+
     let commentVotes: [CommentVote] = []
     let parser = QuillParser()
     var children: [CommentModel] = []
@@ -20,9 +35,11 @@ final class CommentModel: Identifiable, ObservableObject {
     
     init(
         comment: Comment,
+        level: Int,
         parser: QuillParser = .init()
     ) {
         self.comment = comment
+        self.level = level
         self.upvotes = comment.upvotes
         self.upvotesString = toVoteString(upvotes: comment.upvotes)
     }

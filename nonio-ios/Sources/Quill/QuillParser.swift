@@ -105,7 +105,7 @@ struct QuillParser {
             if let link = attributes?.link {
                 attContainer.link = .init(string: link)
             }
-            
+
             if headerLevel > 0 {
                 switch headerLevel {
                 case 1:
@@ -137,10 +137,15 @@ struct QuillParser {
             paragraphStyle.firstLineHeadIndent = textIndent
             paragraphStyle.headIndent = textIndent
             paragraphStyle.minimumLineHeight = font.lineHeight * style.lineHeightMultiple
-                                   
+
             attContainer.font = font
             attText.setAttributes(attContainer)
+            
             attText.mergeAttributes(.init([.paragraphStyle: paragraphStyle]))
+            if let textColor = style.textColor {
+                attText.mergeAttributes(.init([.paragraphStyle: paragraphStyle, .foregroundColor: textColor]))
+            }
+
             result.append(attText)
         }
         return .init(content: result, isQuote: blockquote)
