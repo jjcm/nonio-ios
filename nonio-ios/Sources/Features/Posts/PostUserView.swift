@@ -108,7 +108,7 @@ struct PostUserView: View {
     }
 }
 
-private extension PostUserView {
+extension PostUserView {
     struct Style {
         static let votedColor = Color.red
         static let normalTextColor = Color.primary

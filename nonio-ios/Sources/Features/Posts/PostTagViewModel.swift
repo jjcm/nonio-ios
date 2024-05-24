@@ -6,12 +6,12 @@ final class PostTagViewModel: ObservableObject {
     @Published private(set) var tags: [PostTag]
     @Published private(set) var votes: [Vote]
         
-    let post: String
+    let post: String?
     let provider = NonioProvider.default
     private var cancellables: Set<AnyCancellable> = []
     private var votingMap: [Int: Bool] = [:]
 
-    init(post: String, tags: [PostTag], votes: [Vote]) {
+    init(post: String?, tags: [PostTag], votes: [Vote]) {
         self.post = post
         self.tags = tags
         self.votes = votes
@@ -37,6 +37,7 @@ final class PostTagViewModel: ObservableObject {
     }
     
     private func addVote(tag: PostTag) {
+        guard let post else { return }
         provider.requestPublisher(.addVote(post: post, tag: tag.tag))
             .map(Vote.self)
             .receive(on: DispatchQueue.main)
@@ -57,6 +58,7 @@ final class PostTagViewModel: ObservableObject {
     }
     
     private func removeVote(tag: PostTag) {
+        guard let post else { return }
         provider.requestPublisher(.removeVote(post: post, tag: tag.tag))
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in

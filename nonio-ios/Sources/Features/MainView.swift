@@ -29,7 +29,7 @@ struct MainView: View {
                 .tag(TabItemTag.inbox)
                 .badge(notificationDataTicker.unreadCount)
 
-            SubmitScreen()
+            PostSubmissionScreen()
                 .tabItem {
                     makeTabItem(title: "Submit", image: R.image.tabsSubmit.image)
                 }
@@ -50,14 +50,6 @@ struct MainView: View {
                     makeTabItem(title: "Settings", image: R.image.tabsSettings.image)
                 }
                 .tag(TabItemTag.other)
-        }
-        .onChange(of: selection) { selectedTab in
-            if selectedTab == TabItemTag.user || selectedTab == TabItemTag.login || selectedTab == TabItemTag.inbox {
-
-            } else {
-                // Restrict tab selection to only the first tab, disabling others.
-                selection = TabItemTag.posts
-            }
         }
     }
     

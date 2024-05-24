@@ -27,6 +27,9 @@ enum NonioAPI: AuthTargetType {
     case getNotifications(unread: Bool?)
     case getNotificationsUnreadCount
     case markNotificationRead(id: Int)
+
+    case parseExternalURL(url: String)
+    case checkURLAvailability(url: String)
 }
 
 extension NonioAPI: TargetType, AccessTokenAuthorizable {
@@ -68,14 +71,18 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             return "notification/mark-read"
         case .refreshAccessToken:
             return "user/refresh-access-token"
+        case .parseExternalURL:
+            return "post/parse-external-url"
+        case .checkURLAvailability(let url):
+            return "post/url-is-available/\(url)"
         }
     }
     
     var method: Moya.Method {
         switch self {
-        case .getPosts, .getTags, .getComments, .userInfo, .getVotes, .getCommentVotes, .getNotifications, .getNotificationsUnreadCount, .getPost:
+        case .getPosts, .getTags, .getComments, .userInfo, .getVotes, .getCommentVotes, .getNotifications, .getNotificationsUnreadCount, .getPost, .checkURLAvailability:
             return .get
-        case .login, .addVote, .removeVote, .addCommentVote, .addComment, .markNotificationRead, .refreshAccessToken:
+        case .login, .addVote, .removeVote, .addCommentVote, .addComment, .markNotificationRead, .refreshAccessToken, .parseExternalURL:
             return .post
         }
     }
@@ -89,7 +96,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             )
         case .getComments(let id):
             return .requestParameters(parameters: ["post": id], encoding: URLEncoding.default)
-        case .getTags, .userInfo, .getVotes, .getNotificationsUnreadCount, .getPost:
+        case .getTags, .userInfo, .getVotes, .getNotificationsUnreadCount, .getPost, .checkURLAvailability:
             return .requestPlain
         case .login(let user, let password):
             let params = [
@@ -125,6 +132,8 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             return .requestParameters(parameters: ["id": id], encoding: JSONEncoding.default)
         case .refreshAccessToken(let refreshToken):
             return .requestParameters(parameters: ["refreshToken": refreshToken], encoding: JSONEncoding.default)
+        case .parseExternalURL(let url):
+            return .requestParameters(parameters: ["url": url], encoding: JSONEncoding.default)
         }
     }
     
@@ -138,7 +147,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
     
     var authorizationType: AuthorizationType? {
         switch self {
-        case .userInfo, .getVotes, .addVote, .removeVote, .getCommentVotes, .addCommentVote, .addComment, .getNotifications, .getNotificationsUnreadCount, .markNotificationRead:
+        case .userInfo, .getVotes, .addVote, .removeVote, .getCommentVotes, .addCommentVote, .addComment, .getNotifications, .getNotificationsUnreadCount, .markNotificationRead, .parseExternalURL:
             return .bearer
         default:
             return nil

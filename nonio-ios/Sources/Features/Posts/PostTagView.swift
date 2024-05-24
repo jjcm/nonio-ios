@@ -1,6 +1,6 @@
 import SwiftUI
 
-private struct PostTagView: View {
+struct PostTagView: View {
     @EnvironmentObject var settings: AppSettings
 
     let tag: PostTag
@@ -50,7 +50,7 @@ private struct PostTagView: View {
     }
 }
 
-private extension PostTagView {
+extension PostTagView {
     struct Style {
         static let votedColor = Color.red
         static let normalTextColor = Color.dynamicColor(
@@ -72,13 +72,15 @@ extension HorizontalTagsScrollView {
     struct Style {
         let height: CGFloat
         let textColor: Color
+
+        static let `default` = Style(height: 28, textColor: .blue)
     }
 }
 
 struct HorizontalTagsScrollView: View {
     @ObservedObject var viewModel: PostTagViewModel
     let style: Style
-    init(post: String, tags: [PostTag], votes: [Vote], style: Style) {
+    init(post: String?, tags: [PostTag], votes: [Vote], style: Style = .default) {
         self.viewModel = PostTagViewModel(post: post, tags: tags, votes: votes)
         self.style = style
     }
