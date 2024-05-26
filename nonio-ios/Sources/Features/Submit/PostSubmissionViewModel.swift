@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import PhotosUI
 
 class PostSubmissionViewModel: ObservableObject {
 
@@ -26,6 +27,20 @@ class PostSubmissionViewModel: ObservableObject {
     @Published private(set) var checkingPostURL: Bool = false
     @Published private(set) var postURLIsValid: Bool?
     @Published private(set) var showLink: Bool = true
+
+    @Published var imageSelection: PhotosPickerItem? = nil {
+        didSet {
+            guard let imageSelection else { return }
+            loadTransferable(from: imageSelection)
+        }
+    }
+
+    @Published private(set) var mediaSectionTitle = "Upload media"
+    @Published private(set) var uploadingProgress: Double?
+
+    var showMeida: Bool {
+        selectedContentType == .media
+    }
     var previewImageURL: URL? {
         selectedContentType == .link ? try? parseURLReponse?.image?.asURL() : nil
     }
@@ -168,5 +183,48 @@ private extension PostSubmissionViewModel {
         if postURLPath.isEmpty, response.title.isNotEmpty {
             postURLPath = response.title.split(separator: " ").joined(separator: "-")
         }
+    }
+    
+    func loadTransferable(from item: PhotosPickerItem) {
+        let mimeType = item.supportedContentTypes.first?.preferredMIMEType ?? ""
+        let isImage = item.supportedContentTypes.contains(where: { $0.conforms(to: .image )})
+
+        item.loadTransferable(type: FileTransferable.self) { result in
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                switch result {
+                case .success(let file?):
+                    self.upload(
+                        media: .init(
+                            file: file.url,
+                            fileName: file.filename,
+                            mimeType: mimeType,
+                            type: isImage ? .image : .video
+                        )
+                    )
+                case .success(nil):
+                    break
+                case .failure(let error):
+                    break
+                }
+            }
+        }
+    }
+
+    func upload(media: NonioAPI.Media) {
+        mediaSectionTitle = "Uploading"
+        uploadingProgress = 0
+
+        provider.requestWithProgressPublisher(.uploadMedia(media))
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { [weak self] completion in
+                guard let self else { return }
+                self.mediaSectionTitle = "Upload media"
+                self.uploadingProgress = nil
+            }, receiveValue: { [weak self] response in
+                guard let self else { return }
+                self.uploadingProgress = response.progress >= 1 ? nil : response.progress
+            })
+            .store(in: &cancellables)
     }
 }

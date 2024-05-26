@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 struct PostSubmissionScreen: View {
     @EnvironmentObject var settings: AppSettings
@@ -27,7 +28,8 @@ struct PostSubmissionScreen: View {
                     .pickerStyle(SegmentedPickerStyle())
                     .plainListItem()
                 }
-
+                mediaSection
+                    .showIf(viewModel.showMeida)
                 linkSection()
                 descriptionSection()
                 postURLSection()
@@ -183,6 +185,30 @@ private extension PostSubmissionScreen {
                 tags: viewModel.tags
             )
             .plainListItem()
+        }
+    }
+
+    var mediaSection: some View {
+        Section(header: SectionHeader(viewModel.mediaSectionTitle)) {
+
+            if let progress = viewModel.uploadingProgress {
+                ProgressView(value: progress)
+            }
+
+            PhotosPicker(selection: $viewModel.imageSelection,
+                         matching: .any(of: [.images, .videos]),
+                         photoLibrary: .shared()) {
+
+                HStack {
+                    Icon(image: Image(systemName: "photo.badge.plus"), size: .medium)
+                        .foregroundColor(UIColor.label.color)
+
+                Text(viewModel.imageSelection == nil ? "Select media" : "Select different media")
+                        .foregroundStyle(UIColor.label.color)
+                        .font(.system(size: 17))
+                }
+
+            }.buttonStyle(.borderless)
         }
     }
 
