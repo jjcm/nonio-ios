@@ -3,6 +3,7 @@ import SwiftUI
 struct SearchResultRow: View {
     var text: String
     var searchText: String
+    var count: Int
 
     private var highlightedParts: [(String, Bool)] { // (Text Part, IsHighlighted)
         guard !searchText.isEmpty else {
@@ -35,9 +36,14 @@ struct SearchResultRow: View {
         HStack(alignment: .top, spacing: 0) {
             ForEach(0..<highlightedParts.count, id: \.self) { index in
                 Text(highlightedParts[index].0)
-                    .foregroundColor(highlightedParts[index].1 ? UIColor.label.color : UIColor.secondaryLabel.color)
-                    .fontWeight(highlightedParts[index].1 ? .bold : .regular)
+                    .foregroundStyle(highlightedParts[index].1 ? UIColor.label.color : UIColor.secondaryLabel.color)
+                    .fontWeight(highlightedParts[index].1 ? .semibold : .regular)
             }
+            
+            Spacer()
+            
+            Text(count.description)
+                .foregroundStyle(UIColor.label.color)
         }
     }
 }

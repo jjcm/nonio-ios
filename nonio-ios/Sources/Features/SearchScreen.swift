@@ -1,12 +1,17 @@
 import SwiftUI
 
 struct SearchScreen: View {
-    @ObservedObject private var viewModel = SearchViewModel()
+    @ObservedObject private var viewModel: SearchViewModel
     @FocusState private var isInputActive: Bool
 
     let onSelect: ((Tag?) -> Void)
     let onCancel: (() -> Void)
-    init(onSelect: @escaping (Tag?) -> Void, onCancel: @escaping () -> Void) {
+    init(
+        showCreateNewTag: Bool = false,
+        onSelect: @escaping (Tag?) -> Void,
+        onCancel: @escaping () -> Void
+    ) {
+        self.viewModel = SearchViewModel(showCreateNewTag: showCreateNewTag)
         self.onSelect = onSelect
         self.onCancel = onCancel
     }
@@ -45,11 +50,30 @@ struct SearchScreen: View {
                 }
                 .padding(.horizontal, 16)
 
-                List(viewModel.tags, id: \.tag) { tag in
-                    Button {
-                        onSelect(tag)
-                    } label: {
-                        SearchResultRow(text: tag.tag, searchText: viewModel.searchText)
+                List {
+                    ForEach(Array(viewModel.tags.enumerated()), id: \.offset) { (index, tag) in
+                        if viewModel.isCreateNewTag(index: index) {
+                            HStack {
+                                Text(viewModel.searchText)
+                                    .foregroundStyle(UIColor.label.color)
+                                    .fontWeight(.semibold)
+
+                                Spacer()
+
+                                Button {
+                                    onSelect(.init(tag: viewModel.searchText, count: 0))
+                                } label: {
+                                    Text("create new tag")
+                                        .foregroundStyle(.tint)
+                                }
+                            }
+                        } else {
+                            Button {
+                                onSelect(tag)
+                            } label: {
+                                SearchResultRow(text: tag.tag, searchText: viewModel.searchText, count: tag.count)
+                            }
+                        }
                     }
                 }
             }

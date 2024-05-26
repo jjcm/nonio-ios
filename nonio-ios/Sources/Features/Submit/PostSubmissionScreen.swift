@@ -3,7 +3,7 @@ import SwiftUI
 struct PostSubmissionScreen: View {
     @EnvironmentObject var settings: AppSettings
     @StateObject private var viewModel = PostSubmissionViewModel()
-    @State private var newTag: String = ""
+    @State private var showTagsSearchView = false
 
     var body: some View {
         ZStack {
@@ -38,6 +38,16 @@ struct PostSubmissionScreen: View {
             .onLoad { viewModel.onLoad() }
             .navigationBarTitleDisplayMode(.inline)
             .navigationTitle("Submit Post")
+            .sheet(isPresented: $showTagsSearchView, content: {
+                SearchScreen(showCreateNewTag: true) { tag in
+                    showTagsSearchView = false
+                    if let tag {
+                        viewModel.addTag(tag.tag)
+                    }
+                } onCancel: {
+                    showTagsSearchView = false
+                }
+            })
         }
     }
 }
@@ -144,15 +154,19 @@ private extension PostSubmissionScreen {
             }
 
             HStack {
-                TextField("Add Tag", text: $newTag)
+                Text("Add tag")
+                    .font(.system(size: 17))
+                    .foregroundStyle(UIColor.label.color)
+
+                Spacer()
 
                 Button {
-                    viewModel.addTag(newTag)
-                    newTag = ""
+                    showTagsSearchView = true
                 } label: {
                     Icon(image: Image(systemName: "plus.circle.fill"), size: .small)
                         .foregroundColor(.green)
                 }
+                .buttonStyle(.plain)
             }
         }
     }
