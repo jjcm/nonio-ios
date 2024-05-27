@@ -7,7 +7,8 @@ struct MainView: View {
         static let inbox = 2
         static let user = 3
         static let login = 4
-        static let other = 5
+        static let submission = 5
+        static let other = 6
     }
 
     @State private var selection = TabItemTag.posts
@@ -33,7 +34,7 @@ struct MainView: View {
                 .tabItem {
                     makeTabItem(title: "Submit", image: R.image.tabsSubmit.image)
                 }
-                .tag(TabItemTag.other)
+                .tag(TabItemTag.submission)
             
             if let user = settings.currentUser {
                 userTab(user: user)

@@ -50,6 +50,23 @@ struct PostSubmissionScreen: View {
                     showTagsSearchView = false
                 }
             })
+            .navigationDestination(for: $viewModel.didCreatePost) { post in
+                PostDetailsScreen(
+                    viewModel: .init(
+                        postURL: post.url,
+                        votes: []
+                    )
+                )
+            }
+            .alert("Error", isPresented: $viewModel.showErrorAlert, actions: {
+                Button(action: {
+
+                }, label: {
+                    Text("Please try again")
+                })
+            }, message: {
+                Text(viewModel.errorMessage)
+            })
         }
     }
 }
@@ -118,11 +135,13 @@ private extension PostSubmissionScreen {
                     .foregroundStyle(UIColor.label.color)
                     .padding(.top, 8)
 
-                ZStack(alignment: .leading) {
+                ZStack(alignment: .topLeading) {
                     if viewModel.description.isEmpty {
                         Text("An optional description for the post")
                             .font(.system(size: 17))
                             .foregroundStyle(UIColor.tertiaryLabel.color)
+                            .padding(.top, 6)
+                            .padding(.leading, 8)
                     }
 
                     TextEditor(text: $viewModel.description)
@@ -190,9 +209,16 @@ private extension PostSubmissionScreen {
 
     var mediaSection: some View {
         Section(header: SectionHeader(viewModel.mediaSectionTitle)) {
+            if viewModel.uploading {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .frame(alignment: .center)
+            }
 
-            if let progress = viewModel.uploadingProgress {
-                ProgressView(value: progress)
+            if let data = viewModel.uploadSuccessResult {
+                MediaView(media: data.1, url: data.0)
+                    .plainListItem()
+                    .frame(height: 220)
             }
 
             PhotosPicker(selection: $viewModel.imageSelection,
@@ -203,7 +229,7 @@ private extension PostSubmissionScreen {
                     Icon(image: Image(systemName: "photo.badge.plus"), size: .medium)
                         .foregroundColor(UIColor.label.color)
 
-                Text(viewModel.imageSelection == nil ? "Select media" : "Select different media")
+                    Text(viewModel.imageSelection == nil ? "Select media" : "Select different media")
                         .foregroundStyle(UIColor.label.color)
                         .font(.system(size: 17))
                 }
@@ -216,10 +242,16 @@ private extension PostSubmissionScreen {
         Button {
             viewModel.submitPost()
         } label: {
-            Text("Submit post")
-                .font(.system(size: 17))
-                .foregroundColor(viewModel.submitButtonEnabled ? .blue : UIColor.tertiaryLabel.color)
-                .frame(maxWidth: .infinity)
+            VStack(alignment: .center) {
+                if viewModel.postSubmitting {
+                    ProgressView()
+                } else {
+                    Text("Submit post")
+                        .font(.system(size: 17))
+                        .foregroundColor(viewModel.submitButtonEnabled ? .blue : UIColor.tertiaryLabel.color)
+                }
+            }
+            .frame(maxWidth: .infinity)
         }
         .disabled(!viewModel.submitButtonEnabled)
     }

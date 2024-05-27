@@ -45,6 +45,7 @@ struct PostPreviewView: View {
             .font(.system(size: 14, weight: .medium))
             .multilineTextAlignment(.leading)
             .lineLimit(2)
+            .showIf(title.isNotEmpty)
     }
 
     @ViewBuilder
@@ -59,7 +60,6 @@ struct PostPreviewView: View {
                     Icon(image: R.image.image_add.image, size: .medium)
                         .foregroundStyle(.white)
                 }
-
             }
             .resizable()
             .scaledToFill()
@@ -71,6 +71,7 @@ struct PostPreviewView: View {
     @ViewBuilder
     func linkView(link: String) -> some View {
         PlainLinkView(urlString: link)
+            .showIf(link.isNotEmpty)
     }
 
     var descriptionView: some View {

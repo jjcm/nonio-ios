@@ -117,7 +117,7 @@ struct PostDetailsScreen: View {
             }
         case .video:
             if let videoURL = post.videoURL {
-                PostVideoPlayerView(url: videoURL)
+                VideoPlayerView(url: videoURL)
                     .frame(width: post.mediaSize.width)
                     .frame(height: post.mediaSize.height)
             }

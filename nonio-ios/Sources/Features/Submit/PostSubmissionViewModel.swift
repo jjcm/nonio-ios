@@ -14,6 +14,8 @@ class PostSubmissionViewModel: ObservableObject {
     @Published var title: String = ""
     @Published var description: String = ""
     @Published var tags: [String] = []
+    @Published var showErrorAlert: Bool = false
+    @Published var errorMessage: String = ""
     @Published var selectedContentType: ContentType = .link {
         didSet {
             reloadsections()
@@ -27,6 +29,9 @@ class PostSubmissionViewModel: ObservableObject {
     @Published private(set) var checkingPostURL: Bool = false
     @Published private(set) var postURLIsValid: Bool?
     @Published private(set) var showLink: Bool = true
+    @Published private(set) var uploadSuccessResult: (URL, NonioAPI.Media)?
+    @Published private(set) var postSubmitting: Bool = false
+    @Published var didCreatePost: Post?
 
     @Published var imageSelection: PhotosPickerItem? = nil {
         didSet {
@@ -36,13 +41,20 @@ class PostSubmissionViewModel: ObservableObject {
     }
 
     @Published private(set) var mediaSectionTitle = "Upload media"
-    @Published private(set) var uploadingProgress: Double?
+    @Published private(set) var uploading: Bool = false
 
     var showMeida: Bool {
         selectedContentType == .media
     }
     var previewImageURL: URL? {
-        selectedContentType == .link ? try? parseURLReponse?.image?.asURL() : nil
+        switch selectedContentType {
+        case .link:
+            return try? parseURLReponse?.image?.asURL()
+        case .media:
+            return uploadSuccessResult?.0
+        case .text:
+            return nil
+        }
     }
     var previewLink: String? {
         selectedContentType == .link ? link : nil
@@ -77,7 +89,35 @@ class PostSubmissionViewModel: ObservableObject {
     }
 
     func submitPost() {
-        
+        guard !postSubmitting else { return }
+
+        postSubmitting = true
+
+        let params = CreatePostParams(
+            content: description,
+            title: title,
+            type: getContentTypeParam(),
+            url: postURLPath,
+            link: link,
+            tags: tags
+        )
+        provider.requestPublisher(.postCreate(params))
+            .map(Post.self)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { [weak self] completion in
+                guard let self else { return }
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    self.handleError(error)
+                }
+                self.postSubmitting = false
+            }, receiveValue: { [weak self] post in
+                self?.didCreatePost = post
+                self?.clearInput()
+            })
+            .store(in: &cancellables)
     }
 
     func onLoad() {
@@ -125,12 +165,13 @@ private extension PostSubmissionViewModel {
         provider.requestPublisher(.checkURLAvailability(url: postURLPath))
             .map(Bool.self)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { completion in
+            .sink(receiveCompletion: { [weak self] completion in
+                guard let self else { return }
                 switch completion {
                 case .finished:
                     break
-                case .failure:
-                    break
+                case .failure(let error):
+                    self.handleError(error)
                 }
                 self.checkingPostURL = false
             }, receiveValue: { [weak self] valid in
@@ -158,12 +199,13 @@ private extension PostSubmissionViewModel {
         provider.requestPublisher(.parseExternalURL(url: link))
             .map(ParseExternalURLResponse.self)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { completion in
+            .sink(receiveCompletion: { [weak self] completion in
+                guard let self else { return }
                 switch completion {
                 case .finished:
                     break
-                case .failure:
-                    break
+                case .failure(let error):
+                    self.handleError(error)
                 }
                 self.loading = false
             }, receiveValue: { [weak self] response in
@@ -205,7 +247,7 @@ private extension PostSubmissionViewModel {
                 case .success(nil):
                     break
                 case .failure(let error):
-                    break
+                    self.handleError(error)
                 }
             }
         }
@@ -213,18 +255,65 @@ private extension PostSubmissionViewModel {
 
     func upload(media: NonioAPI.Media) {
         mediaSectionTitle = "Uploading"
-        uploadingProgress = 0
+        uploading = true
 
         provider.requestWithProgressPublisher(.uploadMedia(media))
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] completion in
                 guard let self else { return }
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    self.handleError(error)
+                }
                 self.mediaSectionTitle = "Upload media"
-                self.uploadingProgress = nil
+                self.uploading = false
             }, receiveValue: { [weak self] response in
                 guard let self else { return }
-                self.uploadingProgress = response.progress >= 1 ? nil : response.progress
+
+                if response.completed,
+                   let data = response.response?.data,
+                   let responseFileName = String(data: data, encoding: .utf8) {
+                    self.handleUploadSuccess(fileName: responseFileName, media: media)
+                }
             })
             .store(in: &cancellables)
+    }
+
+    func handleUploadSuccess(fileName: String, media: NonioAPI.Media) {
+        let url: URL
+        switch media.type {
+        case .image:
+            url = Configuration.IMAGE_API_HOST.appending(path: fileName).appendingPathExtension("webp")
+        case .video:
+            url = Configuration.VIDEO_API_HOST.appending(path: fileName)
+        }
+        uploadSuccessResult = (url, media)
+    }
+
+    func clearInput() {
+        title = ""
+        description = ""
+        postURLPath = ""
+        tags = []
+        link = ""
+        parseURLReponse = nil
+    }
+
+    func handleError(_ error: Error) {
+        showErrorAlert = true
+        errorMessage = error.localizedDescription
+    }
+
+    func getContentTypeParam() -> String {
+        switch selectedContentType {
+        case .link:
+            return "link"
+        case .media:
+            return uploadSuccessResult?.1.type == .image ? "image": "video"
+        case .text:
+            return "text"
+        }
     }
 }

@@ -30,6 +30,7 @@ enum NonioAPI: AuthTargetType {
 
     case parseExternalURL(url: String)
     case checkURLAvailability(url: String)
+    case postCreate(CreatePostParams)
 
     struct Media {
         let file: URL
@@ -99,6 +100,8 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             return "post/url-is-available/\(url)"
         case .uploadMedia:
             return "upload"
+        case .postCreate:
+            return "post/create"
         }
     }
     
@@ -106,7 +109,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
         switch self {
         case .getPosts, .getTags, .getComments, .userInfo, .getVotes, .getCommentVotes, .getNotifications, .getNotificationsUnreadCount, .getPost, .checkURLAvailability:
             return .get
-        case .login, .addVote, .removeVote, .addCommentVote, .addComment, .markNotificationRead, .refreshAccessToken, .parseExternalURL, .uploadMedia:
+        case .login, .addVote, .removeVote, .addCommentVote, .addComment, .markNotificationRead, .refreshAccessToken, .parseExternalURL, .uploadMedia, .postCreate:
             return .post
         }
     }
@@ -161,6 +164,11 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
         case .uploadMedia(let media):
             let formData = MultipartFormData(provider: .file(media.file), name: "files", fileName: media.fileName, mimeType: media.mimeType)
             return .uploadMultipart([formData])
+        case .postCreate(let params):
+            return .requestParameters(
+                parameters: params.toRequestParams,
+                encoding: JSONEncoding.default
+            )
         }
     }
     
@@ -174,7 +182,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
     
     var authorizationType: AuthorizationType? {
         switch self {
-        case .userInfo, .getVotes, .addVote, .removeVote, .getCommentVotes, .addCommentVote, .addComment, .getNotifications, .getNotificationsUnreadCount, .markNotificationRead, .parseExternalURL, .uploadMedia:
+        case .userInfo, .getVotes, .addVote, .removeVote, .getCommentVotes, .addCommentVote, .addComment, .getNotifications, .getNotificationsUnreadCount, .markNotificationRead, .parseExternalURL, .uploadMedia, .postCreate:
             return .bearer
         default:
             return nil
@@ -190,7 +198,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
 
     var needAuthenticate: Bool {
         switch self {
-        case .addCommentVote, .addVote, .removeVote, .getNotificationsUnreadCount, .getNotifications, .markNotificationRead, .getCommentVotes, .uploadMedia:
+        case .addCommentVote, .addVote, .removeVote, .getNotificationsUnreadCount, .getNotifications, .markNotificationRead, .getCommentVotes, .uploadMedia, .postCreate:
             return true
         default:
             return false
