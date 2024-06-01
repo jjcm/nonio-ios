@@ -51,9 +51,9 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
         case .uploadMedia(let media):
             switch media.type {
             case .image:
-                return Configuration.IMAGE_API_HOST
+                return Configuration.IMAGE_HOST
             case .video:
-                return Configuration.VIDEO_API_HOST
+                return Configuration.VIDEO_HOST
             }
         default:
             return Configuration.API_HOST

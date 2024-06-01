@@ -32,6 +32,7 @@ class PostSubmissionViewModel: ObservableObject {
     @Published private(set) var uploadSuccessResult: (URL, NonioAPI.Media)?
     @Published private(set) var postSubmitting: Bool = false
     @Published var didCreatePost: Post?
+    @Published private(set) var videoEncodingProgress: String? // todo
 
     @Published var imageSelection: PhotosPickerItem? = nil {
         didSet {
@@ -42,6 +43,7 @@ class PostSubmissionViewModel: ObservableObject {
 
     @Published private(set) var mediaSectionTitle = "Upload media"
     @Published private(set) var uploading: Bool = false
+    private var manager: VideoEncodingManager?
 
     var showMeida: Bool {
         selectedContentType == .media
@@ -275,21 +277,30 @@ private extension PostSubmissionViewModel {
                 if response.completed,
                    let data = response.response?.data,
                    let responseFileName = String(data: data, encoding: .utf8) {
-                    self.handleUploadSuccess(fileName: responseFileName, media: media)
+                    switch media.type {
+                    case .image:
+                        self.handleImageUploadSuccess(fileName: responseFileName, media: media)
+                    case .video:
+                        self.handleVideoUploadSuccess(fileName: responseFileName, media: media)
+                    }
                 }
             })
             .store(in: &cancellables)
     }
 
-    func handleUploadSuccess(fileName: String, media: NonioAPI.Media) {
-        let url: URL
-        switch media.type {
-        case .image:
-            url = Configuration.IMAGE_API_HOST.appending(path: fileName).appendingPathExtension("webp")
-        case .video:
-            url = Configuration.VIDEO_API_HOST.appending(path: fileName)
-        }
+    func handleImageUploadSuccess(fileName: String, media: NonioAPI.Media) {
+        let url = Configuration.IMAGE_HOST.appending(path: fileName).appendingPathExtension("webp")
         uploadSuccessResult = (url, media)
+    }
+
+    func handleVideoUploadSuccess(fileName: String, media: NonioAPI.Media) {
+        startVideoEncoding(filename: fileName)
+    }
+
+    func startVideoEncoding(filename: String) {
+        manager = VideoEncodingManager(server: Configuration.WEB_SOCKET_HOST)
+        manager?.connect(filename: filename)
+        manager?.delegate = self
     }
 
     func clearInput() {
@@ -315,5 +326,12 @@ private extension PostSubmissionViewModel {
         case .text:
             return "text"
         }
+    }
+}
+
+extension PostSubmissionViewModel: VideoEncodingManagerDelegate {
+    func didUpdateProgress(resolution: String, progress: Double) {
+        self.videoEncodingProgress = "\(resolution) + \(progress)"
+        print(">>>> \(resolution):\(progress)")
     }
 }
