@@ -244,7 +244,7 @@ private extension PostSubmissionScreen {
 
     var submitButton: some View {
         Button {
-            viewModel.submitPost()
+            viewModel.submitAction()
         } label: {
             VStack(alignment: .center) {
                 if viewModel.postSubmitting {

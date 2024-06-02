@@ -90,6 +90,16 @@ class PostSubmissionViewModel: ObservableObject {
         tags.removeAll(where: { $0 == tag })
     }
 
+    func submitAction() {
+        if let uploadSuccessResult,
+           uploadSuccessResult.1.type == .image {
+            let uploadUrl = (uploadSuccessResult.0.lastPathComponent as NSString).deletingPathExtension
+            moveImage(oldUrl: uploadUrl, url: postURLPath)
+        } else {
+            submitPost()
+        }
+    }
+
     func submitPost() {
         guard !postSubmitting else { return }
 
@@ -103,6 +113,7 @@ class PostSubmissionViewModel: ObservableObject {
             link: link,
             tags: tags
         )
+
         provider.requestPublisher(.postCreate(params))
             .map(Post.self)
             .receive(on: DispatchQueue.main)
@@ -291,6 +302,28 @@ private extension PostSubmissionViewModel {
     func handleImageUploadSuccess(fileName: String, media: NonioAPI.Media) {
         let url = Configuration.IMAGE_HOST.appending(path: fileName).appendingPathExtension("webp")
         uploadSuccessResult = (url, media)
+    }
+
+    func moveImage(oldUrl: String, url: String) {
+        guard !postSubmitting else { return }
+        postSubmitting = true
+        provider.requestPublisher(.moveImage(from: oldUrl, to: url))
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { [weak self] completion in
+                guard let self else { return }
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    self.handleError(error)
+                }
+                self.postSubmitting = false
+            }, receiveValue: { [weak self] _ in
+                self?.postSubmitting = false
+                self?.submitPost()
+            })
+            .store(in: &cancellables)
+
     }
 
     func handleVideoUploadSuccess(fileName: String, media: NonioAPI.Media) {

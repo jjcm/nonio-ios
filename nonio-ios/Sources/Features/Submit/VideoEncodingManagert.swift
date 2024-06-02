@@ -52,27 +52,6 @@ class VideoEncodingManager: WebSocketDelegate {
         }
     }
 
-//    private func updateResolution(resolution: Int) {
-//        self.equivalentResolution = "480p"
-//        let resolutionBreakpoints: [String: Int] = [
-//            "480p": 0,
-//            "720p": 1067,
-//            "1080p": 1600,
-//            "1440p": 2240,
-//            "2160p": 3200,
-//            "4320p": 5760
-//        ]
-
-//        for (res, breakpoint) in resolutionBreakpoints {
-//            if resolution > breakpoint {
-//                self.equivalentResolution = res
-//                // Assuming you have a function to enable resolution in your UI
-//                enableResolution(resolution: res)
-//            }
-//        }
-//    }
-
-
     private func updateProgress(for resolution: String, percent: Double) {
         delegate?.didUpdateProgress(resolution: resolution, progress: percent)
     }
