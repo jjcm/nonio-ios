@@ -7,7 +7,8 @@ struct MainView: View {
         static let inbox = 2
         static let user = 3
         static let login = 4
-        static let other = 5
+        static let submission = 5
+        static let other = 6
     }
 
     @State private var selection = TabItemTag.posts
@@ -29,11 +30,11 @@ struct MainView: View {
                 .tag(TabItemTag.inbox)
                 .badge(notificationDataTicker.unreadCount)
 
-            SubmitScreen()
+            PostSubmissionScreen()
                 .tabItem {
                     makeTabItem(title: "Submit", image: R.image.tabsSubmit.image)
                 }
-                .tag(TabItemTag.other)
+                .tag(TabItemTag.submission)
             
             if let user = settings.currentUser {
                 userTab(user: user)
@@ -50,14 +51,6 @@ struct MainView: View {
                     makeTabItem(title: "Settings", image: R.image.tabsSettings.image)
                 }
                 .tag(TabItemTag.other)
-        }
-        .onChange(of: selection) { selectedTab in
-            if selectedTab == TabItemTag.user || selectedTab == TabItemTag.login || selectedTab == TabItemTag.inbox {
-
-            } else {
-                // Restrict tab selection to only the first tab, disabling others.
-                selection = TabItemTag.posts
-            }
         }
     }
     

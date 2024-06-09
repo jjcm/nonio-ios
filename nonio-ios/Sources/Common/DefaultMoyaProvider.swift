@@ -67,6 +67,10 @@ class DefaultMoyaProvider<T> where T: AuthTargetType {
     func refreshToken() -> AnyPublisher<Void, MoyaError> {
         return tokenRefreshService.refreshTokenIfNeeded()
     }
+
+    func requestWithProgressPublisher(_ target: T, callbackQueue: DispatchQueue? = nil) -> AnyPublisher<ProgressResponse, MoyaError> {
+        provider.requestWithProgressPublisher(target, callbackQueue: callbackQueue)
+    }
 }
 
 

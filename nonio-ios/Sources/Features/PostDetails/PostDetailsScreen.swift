@@ -117,7 +117,7 @@ struct PostDetailsScreen: View {
             }
         case .video:
             if let videoURL = post.videoURL {
-                PostVideoPlayerView(url: videoURL)
+                VideoPlayerView(url: videoURL)
                     .frame(width: post.mediaSize.width)
                     .frame(height: post.mediaSize.height)
             }
@@ -155,7 +155,7 @@ struct PostDetailsScreen: View {
             post: post.url,
             tags: post.tags,
             votes: viewModel.votes,
-            style: .init(height: 28, textColor: .blue)
+            style: .default
         )
         .padding(.horizontal, 16)
         .padding(.bottom, 10)
