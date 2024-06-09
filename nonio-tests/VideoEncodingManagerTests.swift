@@ -16,7 +16,7 @@ final class VideoEncodingManagerTests: XCTestCase {
         manager.delegate = delegate
 
         manager.sendText("resolution:1280x720")
-        XCTAssertEqual(manager.equivalentResolution, "1280p")
+        XCTAssertEqual(manager.sourceResolution, .p720)
     }
 
     func testProgress() {
@@ -24,8 +24,21 @@ final class VideoEncodingManagerTests: XCTestCase {
         manager.delegate = delegate
 
         manager.sendText("480p:0.8")
-        XCTAssertEqual(delegate.videoProgress?.0, "480p")
-        XCTAssertEqual(delegate.videoProgress?.1, 0.8)
+        XCTAssertEqual(delegate.videoProgress?.resolution, .p480)
+        XCTAssertEqual(delegate.videoProgress?.progress, 0.8)
+    }
+
+    func testEncodeDidFinish() {
+        let delegate = VideoEncodingManagerDelegateMock()
+        manager.delegate = delegate
+
+        XCTAssertFalse(delegate.encodeDidFinished)
+
+        manager.sendText("source:99.9")
+        XCTAssertFalse(delegate.encodeDidFinished)
+
+        manager.sendText("source:100")
+        XCTAssertTrue(delegate.encodeDidFinished)
     }
 }
 
@@ -38,10 +51,14 @@ extension VideoEncodingManager {
 
 class VideoEncodingManagerDelegateMock: VideoEncodingManagerDelegate {
 
-    /// video resolution and it's progress
-    var videoProgress: (String, Double)?
+    var videoProgress: EncodingProgress?
+    var encodeDidFinished: Bool = false
 
-    func didUpdateProgress(resolution: String, progress: Double) {
-        videoProgress = (resolution, progress)
+    func didUpdateProgress(_ progress: EncodingProgress) {
+        videoProgress = progress
+    }
+
+    func encodeDidFinish() {
+        encodeDidFinished = true
     }
 }

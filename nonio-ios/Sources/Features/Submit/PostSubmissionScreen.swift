@@ -215,12 +215,13 @@ private extension PostSubmissionScreen {
                     .frame(alignment: .center)
             }
 
-            if let videoEncodingProgress = viewModel.videoEncodingProgress {
-                Text("\(videoEncodingProgress)")
+            if let videoEncodingProgress = viewModel.videoEncodingProgressesArray {
+                VideoEncodingView(progresses: videoEncodingProgress)
+                    .padding(.vertical, 12)
             }
 
-            if let data = viewModel.uploadSuccessResult {
-                MediaView(media: data.1, url: data.0)
+            if let result = viewModel.uploadSuccessResult {
+                MediaView(media: result)
                     .plainListItem()
                     .frame(height: 220)
             }

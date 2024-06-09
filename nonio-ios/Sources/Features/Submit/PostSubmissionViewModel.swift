@@ -2,6 +2,15 @@ import SwiftUI
 import Combine
 import PhotosUI
 
+struct PostSubmissionMediaType {
+    let fileName: String
+    let type: MediaType
+
+    enum MediaType {
+        case video, image
+    }
+}
+
 class PostSubmissionViewModel: ObservableObject {
 
     let host: String = "https://non.io/"
@@ -29,10 +38,14 @@ class PostSubmissionViewModel: ObservableObject {
     @Published private(set) var checkingPostURL: Bool = false
     @Published private(set) var postURLIsValid: Bool?
     @Published private(set) var showLink: Bool = true
-    @Published private(set) var uploadSuccessResult: (URL, NonioAPI.Media)?
+    @Published private(set) var uploadSuccessResult: PostSubmissionMediaType?
     @Published private(set) var postSubmitting: Bool = false
     @Published var didCreatePost: Post?
-    @Published private(set) var videoEncodingProgress: String? // todo
+    @Published private var _videoEncodingProgresses: [VideoResolution: EncodingProgress]?
+    var videoEncodingProgressesArray: [EncodingProgress]? {
+        guard let _videoEncodingProgresses else { return nil }
+        return Array(_videoEncodingProgresses.values).sorted(by: { $0.resolution < $1.resolution })
+    }
 
     @Published var imageSelection: PhotosPickerItem? = nil {
         didSet {
@@ -44,6 +57,7 @@ class PostSubmissionViewModel: ObservableObject {
     @Published private(set) var mediaSectionTitle = "Upload media"
     @Published private(set) var uploading: Bool = false
     private var manager: VideoEncodingManager?
+    private var uploadedFileName: String?
 
     var showMeida: Bool {
         selectedContentType == .media
@@ -53,11 +67,18 @@ class PostSubmissionViewModel: ObservableObject {
         case .link:
             return try? parseURLReponse?.image?.asURL()
         case .media:
-            return uploadSuccessResult?.0
+            guard let uploadSuccessResult else { return nil }
+            switch uploadSuccessResult.type {
+            case .image:
+                return ImageURLGenerator.imageURL(path: uploadSuccessResult.fileName)
+            default:
+                return nil
+            }
         case .text:
             return nil
         }
     }
+
     var previewLink: String? {
         selectedContentType == .link ? link : nil
     }
@@ -91,10 +112,10 @@ class PostSubmissionViewModel: ObservableObject {
     }
 
     func submitAction() {
-        if let uploadSuccessResult,
-           uploadSuccessResult.1.type == .image {
-            let uploadUrl = (uploadSuccessResult.0.lastPathComponent as NSString).deletingPathExtension
-            moveImage(oldUrl: uploadUrl, url: postURLPath)
+        if let uploadSuccessResult {
+            let uploadUrl = (uploadSuccessResult.fileName
+                             as NSString).deletingPathExtension
+            moveURL(oldUrl: uploadUrl, url: postURLPath, type: uploadSuccessResult.type)
         } else {
             submitPost()
         }
@@ -288,6 +309,7 @@ private extension PostSubmissionViewModel {
                 if response.completed,
                    let data = response.response?.data,
                    let responseFileName = String(data: data, encoding: .utf8) {
+                    self.uploadedFileName = responseFileName
                     switch media.type {
                     case .image:
                         self.handleImageUploadSuccess(fileName: responseFileName, media: media)
@@ -300,14 +322,13 @@ private extension PostSubmissionViewModel {
     }
 
     func handleImageUploadSuccess(fileName: String, media: NonioAPI.Media) {
-        let url = Configuration.IMAGE_HOST.appending(path: fileName).appendingPathExtension("webp")
-        uploadSuccessResult = (url, media)
+        uploadSuccessResult = PostSubmissionMediaType(fileName: fileName, type: .image)
     }
 
-    func moveImage(oldUrl: String, url: String) {
+    func moveURL(oldUrl: String, url: String, type: PostSubmissionMediaType.MediaType) {
         guard !postSubmitting else { return }
         postSubmitting = true
-        provider.requestPublisher(.moveImage(from: oldUrl, to: url))
+        provider.requestPublisher(.moveURL(from: oldUrl, to: url, type: type))
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] completion in
                 guard let self else { return }
@@ -355,16 +376,32 @@ private extension PostSubmissionViewModel {
         case .link:
             return "link"
         case .media:
-            return uploadSuccessResult?.1.type == .image ? "image": "video"
+            return uploadSuccessResult?.type == .image ? "image": "video"
         case .text:
             return "text"
         }
     }
+
+    func initialEncodingProgress() -> [VideoResolution: EncodingProgress] {
+        var result = [VideoResolution: EncodingProgress]()
+        for resolution in VideoResolution.allCases {
+            result[resolution] = .init(resolution, 0, false)
+        }
+        return result
+    }
 }
 
 extension PostSubmissionViewModel: VideoEncodingManagerDelegate {
-    func didUpdateProgress(resolution: String, progress: Double) {
-        self.videoEncodingProgress = "\(resolution) + \(progress)"
-        print(">>>> \(resolution):\(progress)")
+    func didUpdateProgress(_ progress: EncodingProgress) {
+        if _videoEncodingProgresses == nil {
+            _videoEncodingProgresses = initialEncodingProgress()
+        }
+        _videoEncodingProgresses![progress.resolution] = progress
+    }
+
+    func encodeDidFinish() {
+        guard let uploadedFileName else { return }
+        _videoEncodingProgresses = nil
+        uploadSuccessResult = PostSubmissionMediaType(fileName: uploadedFileName, type: .video)
     }
 }

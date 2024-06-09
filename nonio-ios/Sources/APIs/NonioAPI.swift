@@ -31,7 +31,7 @@ enum NonioAPI: AuthTargetType {
     case parseExternalURL(url: String)
     case checkURLAvailability(url: String)
     case postCreate(CreatePostParams)
-    case moveImage(from: String, to: String)
+    case moveURL(from: String, to: String, type: PostSubmissionMediaType.MediaType)
 
     struct Media {
         let file: URL
@@ -56,8 +56,13 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             case .video:
                 return Configuration.VIDEO_HOST
             }
-        case .moveImage:
-            return Configuration.IMAGE_HOST
+        case .moveURL(_, _, let type):
+            switch type {
+            case .image:
+                return Configuration.IMAGE_HOST
+            case .video:
+                return Configuration.VIDEO_HOST
+            }
         default:
             return Configuration.API_HOST
         }
@@ -105,7 +110,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             return "upload"
         case .postCreate:
             return "post/create"
-        case .moveImage:
+        case .moveURL:
             return "move"
         }
     }
@@ -114,7 +119,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
         switch self {
         case .getPosts, .getTags, .getComments, .userInfo, .getVotes, .getCommentVotes, .getNotifications, .getNotificationsUnreadCount, .getPost, .checkURLAvailability:
             return .get
-        case .login, .addVote, .removeVote, .addCommentVote, .addComment, .markNotificationRead, .refreshAccessToken, .parseExternalURL, .uploadMedia, .postCreate, .moveImage:
+        case .login, .addVote, .removeVote, .addCommentVote, .addComment, .markNotificationRead, .refreshAccessToken, .parseExternalURL, .uploadMedia, .postCreate, .moveURL:
             return .post
         }
     }
@@ -174,7 +179,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
                 parameters: params.toRequestParams,
                 encoding: JSONEncoding.default
             )
-        case .moveImage(let from, let to):
+        case .moveURL(let from, let to, _):
             let oldUrlPart = MultipartFormData(provider: .data(from.data(using: .utf8) ?? Data()), name: "oldUrl")
             let urlPart = MultipartFormData(provider: .data(to.data(using: .utf8) ?? Data()), name: "url")
             return .uploadMultipart([oldUrlPart, urlPart])
@@ -191,7 +196,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
     
     var authorizationType: AuthorizationType? {
         switch self {
-        case .userInfo, .getVotes, .addVote, .removeVote, .getCommentVotes, .addCommentVote, .addComment, .getNotifications, .getNotificationsUnreadCount, .markNotificationRead, .parseExternalURL, .uploadMedia, .postCreate, .moveImage:
+        case .userInfo, .getVotes, .addVote, .removeVote, .getCommentVotes, .addCommentVote, .addComment, .getNotifications, .getNotificationsUnreadCount, .markNotificationRead, .parseExternalURL, .uploadMedia, .postCreate, .moveURL:
             return .bearer
         default:
             return nil
