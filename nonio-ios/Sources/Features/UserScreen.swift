@@ -87,12 +87,12 @@ struct UserScreen: View {
         VStack(alignment: .leading) {
             Text("CONTENT")
                 .foregroundStyle(.secondary)
-                .font(.callout)
-                .frame(height: 40)
+                .font(.system(size: 13))
+                .frame(height: 23)
                 .multilineTextAlignment(.leading)
                 .padding(.horizontal)
             
-            VStack {
+            VStack(spacing: 0) {
                 row(
                     title: "Posts",
                     value: viewModel.posts,
@@ -123,12 +123,12 @@ struct UserScreen: View {
         VStack(alignment: .leading) {
             Text("STATS")
                 .foregroundStyle(.secondary)
-                .font(.callout)
-                .frame(height: 40)
+                .font(.system(size: 13))
+                .frame(height: 23)
                 .multilineTextAlignment(.leading)
                 .padding(.horizontal)
             
-            VStack {
+            VStack(spacing: 0) {
                 row(
                     title: "Post Karma",
                     value: viewModel.postKarma,
@@ -177,6 +177,8 @@ struct UserScreen: View {
                 
                 Icon(image: R.image.chevronRight.image, size: .big)
                     .showIf(showIndicator)
+                    .frame(width: 16)
+                    .offset(x: 4)
             }
             .frame(height: 44)
             .padding(.horizontal, 16)
