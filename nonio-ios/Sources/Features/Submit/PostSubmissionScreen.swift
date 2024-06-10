@@ -140,13 +140,16 @@ private extension PostSubmissionScreen {
                         Text("An optional description for the post")
                             .font(.system(size: 17))
                             .foregroundStyle(UIColor.tertiaryLabel.color)
-                            .padding(.top, 6)
-                            .padding(.leading, 8)
+                            .padding(.top, 0)
+                            .padding(.leading, 0)
+                            .frame(minHeight: 40)
+                            .offset(y: -12)
                     }
 
                     TextEditor(text: $viewModel.description)
                         .font(.system(size: 17))
                         .foregroundStyle(UIColor.label.color)
+                        .frame(minHeight: 40)
                 }
 
                 Spacer()
@@ -263,5 +266,5 @@ private extension PostSubmissionScreen {
 }
 
 #Preview {
-    PostSubmissionScreen()
+    PostSubmissionScreen().environmentObject(AppSettings())
 }
