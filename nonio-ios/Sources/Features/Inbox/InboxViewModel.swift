@@ -11,6 +11,16 @@ class InboxViewModel: ObservableObject {
     private var cancellables: Set<AnyCancellable> = []
     private let parser = QuillParser()
 
+    init(
+        models: [InboxNotification] = [],
+        loading: Bool = true,
+        unreadCountUpdated: Int? = nil
+    ) {
+        self.models = models
+        self.loading = loading
+        self.unreadCountUpdated = unreadCountUpdated
+    }
+
     func fetch() {
         loading = true
         provider.requestPublisher(.getNotifications(unread: nil))

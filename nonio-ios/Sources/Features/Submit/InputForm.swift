@@ -23,3 +23,13 @@ struct InputForm: View {
         }
     }
 }
+
+#Preview {
+    InputForm(
+        title: "title",
+        placeholder: "placeholder",
+        error: "error message",
+        value: .constant("")
+    )
+    .padding()
+}

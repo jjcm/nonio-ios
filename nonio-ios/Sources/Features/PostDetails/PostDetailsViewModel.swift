@@ -34,7 +34,19 @@ final class PostDetailsViewModel: ObservableObject {
         self.votes = votes
         self.scrollToCommentID = scrollToComment
     }
-    
+
+    init(
+        post: Post,
+        commentViewModels: [CommentModel] = [],
+        votes: [Vote]
+    ) {
+        self.post = post
+        self.commentViewModels = commentViewModels
+        self.postURL = post.url
+        self.scrollToCommentID = nil
+        self.votes = votes
+    }
+
     func onLoad() {
         getPost()
         getComments()

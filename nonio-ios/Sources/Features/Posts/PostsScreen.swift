@@ -161,4 +161,5 @@ struct PostsScreen: View {
 
 #Preview {
     PostsScreen(viewModel: .init())
+        .environmentObject(AppSettings())
 }

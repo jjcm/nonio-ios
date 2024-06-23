@@ -70,19 +70,25 @@ struct PostRowView: View {
     }
 }
 
-struct TagsView: View {
-    var tags: [PostTag]
-    
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack {
-                ForEach(tags, id: \.tag) { tag in
-                    Text("#\(tag.tag)")
-                        .padding(5)
-                        .background(Color.gray.opacity(0.5))
-                        .cornerRadius(5)
-                }
-            }
-        }
-    }
+#Preview {
+    PostRowView(
+        viewModel: .init(post: Post(
+            id: 1,
+            title: "test image",
+            user: "user",
+            time: 1717334831000,
+            url: "test-image-2",
+            link: nil,
+            type: .image,
+            content: "{\"ops\":[{\"insert\":\"test description\\n\"}]}",
+            score: 10,
+            commentCount: 20,
+            tags: [.init(postID: 1, tag: "Tag", tagID: 100, score: 1)]
+        )),
+        votes: [],
+        didTapUserProfileAction: {},
+        didTapPostLink: nil
+    )
+    .fixedSize()
+    .environmentObject(AppSettings())
 }

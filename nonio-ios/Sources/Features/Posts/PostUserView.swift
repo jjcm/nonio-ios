@@ -123,3 +123,32 @@ extension PostUserView {
         )
     }
 }
+
+#Preview {
+    PostUserView(
+        viewModel: .init(
+            comment: .init(
+                id: 1,
+                date: 1717334831000,
+                post: "post",
+                postTitle: "title",
+                content: "{\"ops\":[{\"insert\":\"test comment\"},{\"attributes\":{\"blockquote\":true},\"insert\":\"\\n\"},{\"insert\":\"\\n\"}]}",
+                user: "user",
+                upvotes: 10,
+                downvotes: 1,
+                parent: -1,
+                lineageScore: 10,
+                descendentCommentCount: 20,
+                edited: false
+            ),
+            upvotesString: "10",
+            showUpvoteCount: true
+        ),
+        commentVotesViewModel: .init(postURL: "url"),
+        isCollapsed: false,
+        didTapUserProfileAction: {},
+        upvoteAction: { }
+    )
+    .padding()
+    .environmentObject(AppSettings())
+}

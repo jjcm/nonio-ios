@@ -82,3 +82,12 @@ struct CommentEditorScreen: View {
         viewModel.addComment(content: content)
     }
 }
+
+#Preview {
+    CommentEditorScreen(
+        postURL: "",
+        comment: nil,
+        addCommentSuccess: { _ in },
+        didCancel: { }
+    )
+}
