@@ -7,16 +7,19 @@ struct PostTagView: View {
     let voted: Bool
     let textColor: Color
     let toggleVoteAction: (() -> Void)
+    let onTap: ((PostTag) -> Void)
     init(
         tag: PostTag,
         voted: Bool,
         textColor: Color,
-        toggleVoteAction: @escaping () -> Void
+        toggleVoteAction: @escaping () -> Void,
+        onTap: @escaping ((PostTag)) -> Void
     ) {
         self.tag = tag
         self.voted = voted
         self.textColor = textColor
         self.toggleVoteAction = toggleVoteAction
+        self.onTap = onTap
     }
     
     var body: some View {
@@ -36,14 +39,18 @@ struct PostTagView: View {
             .padding(6)
             .showIf(tag.score > 0)
             
-            Text(tag.tag)
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(textColor)
-                .padding(.horizontal, 8)
-                .cornerRadius(2)
-                .frame(maxHeight: .infinity)
-                .background(Style.tagBGColor)
+            Button {
+                onTap(tag)
+            } label: {
+                Text(tag.tag)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(textColor)
+                    .padding(.horizontal, 8)
+                    .cornerRadius(2)
+                    .frame(maxHeight: .infinity)
+                    .background(Style.tagBGColor)
+            }
         }
         .background(Style.bgColor)
         .cornerRadius(8)
@@ -80,9 +87,17 @@ extension HorizontalTagsScrollView {
 struct HorizontalTagsScrollView: View {
     @ObservedObject var viewModel: PostTagViewModel
     let style: Style
-    init(post: String?, tags: [PostTag], votes: [Vote], style: Style = .default) {
+    let onTap: ((PostTag) -> Void)
+    init(
+        post: String?,
+        tags: [PostTag],
+        votes: [Vote],
+        style: Style = .default,
+        onTap: @escaping ((PostTag)) -> Void = { _ in }
+    ) {
         self.viewModel = PostTagViewModel(post: post, tags: tags, votes: votes)
         self.style = style
+        self.onTap = onTap
     }
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -91,6 +106,8 @@ struct HorizontalTagsScrollView: View {
                     let voted = viewModel.isVoted(tag: tag)
                     PostTagView(tag: tag, voted: voted, textColor: style.textColor) {
                         viewModel.toggleVote(tag: tag, vote: !voted)
+                    } onTap: { tag in
+                        onTap(tag)
                     }
                     .frame(height: style.height)
                 }

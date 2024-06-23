@@ -3,6 +3,7 @@ import Kingfisher
 
 struct PostDetailsScreen: View {
     @EnvironmentObject var settings: AppSettings
+    @Environment(\.dismiss) var dismiss
     @StateObject var viewModel: PostDetailsViewModel
     @State private var openURLViewModel = ShowInAppBrowserViewModel()
     @State private var selectedUser: String?
@@ -11,16 +12,19 @@ struct PostDetailsScreen: View {
     @State private var commentAnimationHasShown: Bool = false
     @State private var animationEnded: Bool = false
 
+    let onTap: ((PostTag) -> Void)
     init(
         viewModel: PostDetailsViewModel,
         openURLViewModel: ShowInAppBrowserViewModel = ShowInAppBrowserViewModel(),
         selectedUser: String? = nil,
-        showCommentEditor: Bool = false
+        showCommentEditor: Bool = false,
+        onTap: @escaping ((PostTag)) -> Void = { _ in }
     ) {
         self._viewModel = .init(wrappedValue: viewModel)
         self.openURLViewModel = openURLViewModel
         self.selectedUser = selectedUser
         self.showCommentEditor = showCommentEditor
+        self.onTap = onTap
     }
 
     var body: some View {
@@ -168,7 +172,10 @@ struct PostDetailsScreen: View {
             tags: post.tags,
             votes: viewModel.votes,
             style: .default
-        )
+        ) { tag in
+            onTap(tag)
+            dismiss()
+        }
         .padding(.horizontal, 16)
         .padding(.bottom, 10)
         .showIf(post.shouldShowTags)
@@ -260,7 +267,8 @@ private extension PostDetailsScreen {
                 tags: [.init(postID: 1, tag: "Tag", tagID: 100, score: 1)]
             ),
             votes: []
-        )   
+        ),
+        onTap: { _ in }
     )
     .environmentObject(AppSettings())
 }

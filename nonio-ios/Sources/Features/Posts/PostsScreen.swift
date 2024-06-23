@@ -57,7 +57,14 @@ struct PostsScreen: View {
                             postURL: post.url,
                             votes: viewModel.votes
                         )
-                    )
+                    ) { tag in
+                        viewModel.onSelectTag(
+                            .init(
+                                tag: tag.tag,
+                                count: tag.tag.count
+                            )
+                        )
+                    }
                 }
                 .sheet(isPresented: $showTagsSearchView, content: {
                     SearchScreen { tag in

@@ -56,7 +56,7 @@ struct InboxScreen: View {
                 UserScreen(param: .user(user))
             }
             .navigationDestination(for: $selectedNotification) { notification in
-                return PostDetailsScreen(
+                PostDetailsScreen(
                     viewModel: .init(
                         postURL: notification.post,
                         votes: [],
