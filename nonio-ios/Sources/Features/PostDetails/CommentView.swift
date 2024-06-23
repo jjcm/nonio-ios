@@ -81,3 +81,33 @@ private extension CommentView {
         static let levelIndent: CGFloat = 20
     }
 }
+
+#Preview {
+    CommentView(
+        comment: .init(
+            comment: .init(
+                id: 1,
+                date: 1,
+                post: "post",
+                postTitle: "title",
+                content: "{\"ops\":[{\"insert\":\"test comment\"},{\"attributes\":{\"blockquote\":true},\"insert\":\"\\n\"},{\"insert\":\"\\n\"}]}",
+                user: "mike",
+                upvotes: 10,
+                downvotes: 1,
+                parent: -1,
+                lineageScore: 20,
+                descendentCommentCount: 30,
+                edited: false
+            ),
+            level: 1
+        ),
+        showUpvoteCount: true,
+        width: UIScreen.main.bounds.width,
+        commentVotesViewModel: .init(postURL: ""),
+        didTapOnURL: {
+            _ in
+        },
+        didTapUserProfileAction: { _ in }
+    )
+    .environmentObject(AppSettings())
+}

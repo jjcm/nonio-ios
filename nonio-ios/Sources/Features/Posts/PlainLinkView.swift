@@ -22,3 +22,8 @@ struct PlainLinkView: View {
         .frame(height: 32)
     }
 }
+
+#Preview {
+    PlainLinkView(urlString: "https://www.google.com")
+        .padding()
+}

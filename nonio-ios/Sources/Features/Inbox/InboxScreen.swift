@@ -8,6 +8,18 @@ struct InboxScreen: View {
     @EnvironmentObject var notificationDataTicker: NotificationUnreadTicker
     @State private var openURLViewModel = ShowInAppBrowserViewModel()
 
+    init(
+        viewModel: InboxViewModel,
+        selectedUser: String? = nil,
+        selectedNotification: InboxNotification? = nil,
+        openURLViewModel: ShowInAppBrowserViewModel = ShowInAppBrowserViewModel()
+    ) {
+        self._viewModel = .init(wrappedValue: viewModel)
+        self.selectedUser = selectedUser
+        self.selectedNotification = selectedNotification
+        self.openURLViewModel = openURLViewModel
+    }
+
     var body: some View {
         ZStack {
             content
@@ -142,5 +154,28 @@ private extension InboxScreen {
 }
 
 #Preview {
-    InboxScreen(viewModel: .init())
+    InboxScreen(
+        viewModel: .init(
+            models: [
+                .init(
+                    id: 1,
+                    comment_id: 2,
+                    date: 1717334831000,
+                    post: "post",
+                    post_title: "post title",
+                    content: "{\"ops\":[{\"insert\":\"test comment\"},{\"attributes\":{\"blockquote\":true},\"insert\":\"\\n\"},{\"insert\":\"\\n\"}]}",
+                    user: "user",
+                    upvotes: 10,
+                    downvotes: 1,
+                    parent: -1,
+                    edited: false,
+                    read: false,
+                    post_type: "text",
+                    parent_content: "{\"ops\":[{\"insert\":\"test comment\"},{\"attributes\":{\"blockquote\":true},\"insert\":\"\\n\"},{\"insert\":\"\\n\"}]}"
+                )
+            ]
+        )
+    )
+    .environmentObject(AppSettings())
+    .environmentObject(NotificationUnreadTicker())
 }

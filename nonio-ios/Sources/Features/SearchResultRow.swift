@@ -47,3 +47,12 @@ struct SearchResultRow: View {
         }
     }
 }
+
+#Preview {
+    SearchResultRow(
+        text: "result text",
+        searchText: "tex",
+        count: 1
+    )
+    .padding()
+}
