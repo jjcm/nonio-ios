@@ -32,8 +32,17 @@ struct InboxScreen: View {
 
     var content: some View {
         NavigationStack {
-            List(viewModel.models, id: \.self) { model in
-                row(model: model)
+            List {
+                if viewModel.models.isEmpty {
+                    Text("Your inbox is empty.")
+                        .font(.body)
+                        .foregroundStyle(UIColor.secondaryLabel.color)
+                        .padding()
+                        .plainListItem()
+                }
+                ForEach(viewModel.models, id: \.self) { model in
+                    row(model: model)
+                }
             }
             .listStyle(.plain)
             .listRowSpacing(8)
