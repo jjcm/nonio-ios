@@ -9,11 +9,11 @@ struct UserScreen: View {
     }
     
     @EnvironmentObject var settings: AppSettings
-    @ObservedObject var viewModel: UserViewModel
+    @StateObject var viewModel: UserViewModel
     @State private var selectedRoute: Route?
 
     init(param: UserViewParamType) {
-        viewModel = UserViewModel(param: param)
+        self._viewModel = .init(wrappedValue: UserViewModel(param: param))
     }
     
     var body: some View {
@@ -206,5 +206,5 @@ struct UserScreen: View {
 }
 
 #Preview {
-    UserScreen(param: .user("tom"))
+    UserScreen(param: .user("mike.x"))
 }
