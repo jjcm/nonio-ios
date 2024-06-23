@@ -115,24 +115,21 @@ struct PostsScreen: View {
         }
         
         ToolbarItem(placement: .principal) {
-            Text(viewModel.title)
-                .font(.headline)
-                .foregroundColor(.secondary)
+            Button {
+                showTagsSearchView = true
+            } label: {
+                Text(viewModel.title)
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+            }
+
         }
         
         ToolbarItem(placement: .topBarTrailing) {
-            HStack {
-                Button {
-                    showTagsSearchView = true
-                } label: {
-                    Icon(image: Image(systemName: "magnifyingglass"), size: .small)
-                }
-                
-                Button {
-                    showSortActionSheet = true
-                } label: {
-                    Icon(image: R.image.sort.image, size: .medium)
-                }
+            Button {
+                showSortActionSheet = true
+            } label: {
+                Icon(image: R.image.sort.image, size: .medium)
             }
         }
     }
