@@ -5,8 +5,9 @@ struct PostRowView: View {
     let viewModel: PostViewModel
     let votes: [Vote]
     let didTapUserProfileAction: (() -> Void)
+    let didTapTag: ((PostTag) -> Void)
     let didTapPostLink: ((Post) -> Void)?
-    
+
     var body: some View {
         VStack(alignment: .leading) {
             headerView
@@ -63,7 +64,10 @@ struct PostRowView: View {
             post: viewModel.post.url,
             tags: viewModel.post.tags,
             votes: votes,
-            style: .init(height: 24, textColor: .secondary)
+            style: .init(height: 24, textColor: .secondary),
+            onTap: { tag in
+                didTapTag(tag)
+            }
         )
         .padding(.horizontal, 16)
         .showIf(viewModel.shouldShowTags)
@@ -86,7 +90,8 @@ struct PostRowView: View {
             tags: [.init(postID: 1, tag: "Tag", tagID: 100, score: 1)]
         )),
         votes: [],
-        didTapUserProfileAction: {},
+        didTapUserProfileAction: {}, 
+        didTapTag: { _ in },
         didTapPostLink: nil
     )
     .fixedSize()

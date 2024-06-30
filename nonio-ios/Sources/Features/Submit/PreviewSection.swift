@@ -12,9 +12,9 @@ struct PreviewSection: View {
                 viewModel: .init(post: post),
                 votes: [],
                 didTapUserProfileAction: {
-                },
-                didTapPostLink: { _ in
-                }
+                }, 
+                didTapTag: { _ in },
+                didTapPostLink: { _ in }
             )
         }
     }

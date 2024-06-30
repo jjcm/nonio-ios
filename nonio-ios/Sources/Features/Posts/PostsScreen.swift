@@ -97,6 +97,14 @@ struct PostsScreen: View {
                 votes: viewModel.votes,
                 didTapUserProfileAction: {
                     selectedUser = post.user
+                }, 
+                didTapTag: { tag in
+                    viewModel.onSelectTag(
+                        .init(
+                            tag: tag.tag,
+                            count: tag.tag.count
+                        )
+                    )
                 },
                 didTapPostLink: {
                     post in
