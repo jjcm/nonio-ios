@@ -14,6 +14,7 @@ struct MainView: View {
     @State private var selection = TabItemTag.posts
     @EnvironmentObject var settings: AppSettings
     @EnvironmentObject var notificationDataTicker: NotificationUnreadTicker
+    @State private var avatar: UIImage?
 
     var body: some View {
         TabView(selection: $selection) {
@@ -37,7 +38,7 @@ struct MainView: View {
                 .tag(TabItemTag.submission)
             
             if let user = settings.currentUser {
-                userTab(user: user)
+                userTab(avatar: avatar, user: user)
             } else {
                 LoginScreen()
                     .tabItem {
@@ -52,6 +53,15 @@ struct MainView: View {
                 }
                 .tag(TabItemTag.other)
         }
+        .onLoad {
+            guard let user = settings.currentUser else { return }
+            fetchAvatar(user: user)
+        }
+        .onChange(of: settings.currentUser, { oldValue, user in
+            guard let user else { return }
+            fetchAvatar(user: user)
+        })
+        .interfaceOrientations(.portrait)
     }
     
     @ViewBuilder
@@ -67,29 +77,40 @@ struct MainView: View {
     }
     
     @ViewBuilder
-    func userTab(user: LoginResponse) -> some View {
+    func userTab(avatar: UIImage?, user: LoginResponse) -> some View {
         UserScreen(param: .login(user))
             .tabItem {
-//                userAvatar(user: user.username)
-                Icon(image: R.image.tabsUser.image, size: .small)
-
+                TabIcon(icon: avatar ?? UIImage(), size: CGSize(width: 24, height: 24))
                 Text(user.username)
             }
             .tag(TabItemTag.user)
-        
     }
-    
-    private func userAvatar(user: String) -> some View {
-        KFImage(ImageURLGenerator.userAvatarURL(user: user))
-            .placeholder {
-                Icon(image: R.image.add.image, size: .small)
+
+    private func fetchAvatar(user: LoginResponse) {
+        KingfisherManager.shared.retrieveImage(
+            with: ImageURLGenerator.userAvatarURL(user: user.username),
+            options: [.forceRefresh]
+        ) { result in
+            switch result {
+            case .success(let result):
+                avatar = result.image
+            default:
+                break
             }
-            .onSuccess { r in print("success: \(r)") }
-            .setProcessor(ResizingImageProcessor(referenceSize: CGSize(width: 16 , height: 16), mode: .aspectFit) |> RoundCornerImageProcessor(cornerRadius: 8))
-            .frame(width: 16, height: 16)
+        }
     }
 }
 
 #Preview {
     MainView()
+        .environmentObject(
+            AppSettings(
+                user: .init(
+                    accessToken: "",
+                    refreshToken: "",
+                    username: "jjcm"
+                )
+            )
+        )
+        .environmentObject(NotificationUnreadTicker())
 }
