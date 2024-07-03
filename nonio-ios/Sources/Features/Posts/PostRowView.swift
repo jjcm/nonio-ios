@@ -3,7 +3,6 @@ import Kingfisher
 
 struct PostRowView: View {
     let viewModel: PostViewModel
-    let votes: [Vote]
     let didTapUserProfileAction: (() -> Void)
     let didTapTag: ((PostTag) -> Void)
     let didTapPostLink: ((Post) -> Void)?
@@ -62,8 +61,7 @@ struct PostRowView: View {
     var tagsView: some View {
         HorizontalTagsScrollView(
             post: viewModel.post.url,
-            tags: viewModel.post.tags,
-            votes: votes,
+            viewModel: .init(tags: viewModel.post.tags),
             style: .init(height: 24, textColor: .secondary),
             onTap: { tag in
                 didTapTag(tag)
@@ -89,7 +87,6 @@ struct PostRowView: View {
             commentCount: 20,
             tags: [.init(postID: 1, tag: "Tag", tagID: 100, score: 1)]
         )),
-        votes: [],
         didTapUserProfileAction: {}, 
         didTapTag: { _ in },
         didTapPostLink: nil

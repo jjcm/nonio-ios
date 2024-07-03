@@ -10,7 +10,6 @@ struct PreviewSection: View {
 
             PostRowView(
                 viewModel: .init(post: post),
-                votes: [],
                 didTapUserProfileAction: {
                 }, 
                 didTapTag: { _ in },

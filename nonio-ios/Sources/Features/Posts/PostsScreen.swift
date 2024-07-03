@@ -3,6 +3,7 @@ import Combine
 
 struct PostsScreen: View {
     @EnvironmentObject var settings: AppSettings
+    @EnvironmentObject var votingService: UserVotingService
     @StateObject var viewModel: PostsViewModel
     @State private var showSortTimeframeActionSheet = false
     @State private var showSortActionSheet = false
@@ -41,11 +42,14 @@ struct PostsScreen: View {
                 }
                 .refreshable {
                     viewModel.fetch()
-                    viewModel.fetchVotes(hasLoggedIn: settings.hasLoggedIn)
+
+                    if settings.hasLoggedIn {
+                        votingService.fetchVotes()
+                    }
                 }
-                .onChange(of: viewModel.displayTag, perform: { _ in
+                .onChange(of: viewModel.displayTag) {
                     proxy.scrollTo(viewModel.posts.first?.ID)
-                })
+                }
                 .background(UIColor.secondarySystemBackground.color)
                 .navigationDestination(for: $selectedUser) { user in
                     UserScreen(param: .user(user))
@@ -53,10 +57,7 @@ struct PostsScreen: View {
                 .navigationTitle(viewModel.title)
                 .navigationDestination(for: $selectedPost) { post in
                     PostDetailsScreen(
-                        viewModel: .init(
-                            postURL: post.url,
-                            votes: viewModel.votes
-                        )
+                        viewModel: .init(postURL: post.url)
                     ) { tag in
                         viewModel.onSelectTag(
                             .init(
@@ -78,12 +79,8 @@ struct PostsScreen: View {
                 })
             }
         }
-        .onChange(of: settings.hasLoggedIn, perform: { hasLoggedIn in
-            viewModel.fetchVotes(hasLoggedIn: hasLoggedIn)
-        })
         .onLoad {
             viewModel.fetch()
-            viewModel.fetchVotes(hasLoggedIn: settings.hasLoggedIn)
         }
     }
     
@@ -94,7 +91,6 @@ struct PostsScreen: View {
         } label: {
             PostRowView(
                 viewModel: .init(post: post),
-                votes: viewModel.votes,
                 didTapUserProfileAction: {
                     selectedUser = post.user
                 }, 

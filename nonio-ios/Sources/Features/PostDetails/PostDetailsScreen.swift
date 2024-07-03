@@ -4,6 +4,7 @@ import Kingfisher
 struct PostDetailsScreen: View {
     @EnvironmentObject var settings: AppSettings
     @Environment(\.dismiss) var dismiss
+
     @StateObject var viewModel: PostDetailsViewModel
     @State private var openURLViewModel = ShowInAppBrowserViewModel()
     @State private var selectedUser: String?
@@ -87,7 +88,7 @@ struct PostDetailsScreen: View {
                     }
                 }
                 .listStyle(.plain)
-                .onChange(of: viewModel.scrollToComment) { id in
+                .onChange(of: viewModel.scrollToComment) { _, id in
                     guard let id else { return }
                     withAnimation {
                         scrollProxy.scrollTo(id)
@@ -169,8 +170,7 @@ struct PostDetailsScreen: View {
     func tagsView(post: Post) -> some View {
         HorizontalTagsScrollView(
             post: post.url,
-            tags: post.tags,
-            votes: viewModel.votes,
+            viewModel: .init(tags: post.tags),
             style: .default
         ) { tag in
             onTap(tag)

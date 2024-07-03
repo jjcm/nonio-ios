@@ -3,25 +3,24 @@ import Moya
 import Combine
 
 final class PostTagViewModel: ObservableObject {
-    @Published private(set) var tags: [PostTag]
-    @Published private(set) var votes: [Vote]
-        
-    let post: String?
+    @Published private(set) var tags: [PostTag] = []
+
     let provider = NonioProvider.default
     private var cancellables: Set<AnyCancellable> = []
     private var votingMap: [Int: Bool] = [:]
 
-    init(post: String?, tags: [PostTag], votes: [Vote]) {
-        self.post = post
+    var userVotingService: UserVotingService?
+
+    init(tags: [PostTag]) {
         self.tags = tags
-        self.votes = votes
     }
-    
-    func isVoted(tag: PostTag) -> Bool {
-        votes.contains(where: { $0.tagID == tag.tagID && $0.postID == tag.postID })
+
+    func isVoted(tag: PostTag, service: UserVotingService) -> Bool {
+        service.isVoted(tag: tag) == true
     }
-    
-    func toggleVote(tag: PostTag, vote: Bool) {
+
+    func toggleVote(post: String?, tag: PostTag, vote: Bool) {
+        guard let post else { return }
         if votingMap[tag.tagID] == true {
             // return if request is loading
             return
@@ -30,20 +29,21 @@ final class PostTagViewModel: ObservableObject {
         updateLoading(tag: tag, loading: true)
 
         if vote {
-            addVote(tag: tag)
+            addVote(post: post, tag: tag)
         } else {
-            removeVote(tag: tag)
+            removeVote(post: post, tag: tag)
         }
     }
-    
-    private func addVote(tag: PostTag) {
-        guard let post else { return }
+
+    private func addVote(post: String, tag: PostTag) {
         provider.requestPublisher(.addVote(post: post, tag: tag.tag))
             .map(Vote.self)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in
                 
-            }, receiveValue: { vote in
+            }, receiveValue: { [weak self] vote in
+                guard let self else { return }
+
                 self.updateLoading(tag: tag, loading: false)
                 self.tags = self.tags.map { old in
                     var newTag = old
@@ -52,20 +52,20 @@ final class PostTagViewModel: ObservableObject {
                     }
                     return newTag
                 }
-                self.votes.append(vote)
+                self.userVotingService?.addVote(vote)
             })
             .store(in: &cancellables)
     }
     
-    private func removeVote(tag: PostTag) {
-        guard let post else { return }
+    private func removeVote(post: String, tag: PostTag) {
         provider.requestPublisher(.removeVote(post: post, tag: tag.tag))
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in
                 
-            }, receiveValue: { _ in
+            }, receiveValue: { [weak self] _ in
+                guard let self else { return }
+
                 self.updateLoading(tag: tag, loading: false)
-                self.votes.removeAll(where: { $0.tagID == tag.tagID })
                 self.tags = self.tags.map { old in
                     var newTag = old
                     if newTag.tagID == tag.tagID {
@@ -73,6 +73,7 @@ final class PostTagViewModel: ObservableObject {
                     }
                     return newTag
                 }
+                self.userVotingService?.remoteVote(tag)
             })
             .store(in: &cancellables)
     }

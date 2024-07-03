@@ -85,33 +85,38 @@ extension HorizontalTagsScrollView {
 }
 
 struct HorizontalTagsScrollView: View {
-    @ObservedObject var viewModel: PostTagViewModel
+    @StateObject var viewModel: PostTagViewModel
+    @EnvironmentObject var userVotingService: UserVotingService
+    let post: String?
     let style: Style
     let onTap: ((PostTag) -> Void)
     init(
         post: String?,
-        tags: [PostTag],
-        votes: [Vote],
+        viewModel: PostTagViewModel,
         style: Style = .default,
         onTap: @escaping ((PostTag)) -> Void = { _ in }
     ) {
-        self.viewModel = PostTagViewModel(post: post, tags: tags, votes: votes)
+        self._viewModel = .init(wrappedValue: viewModel)
         self.style = style
         self.onTap = onTap
+        self.post = post
     }
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack {
                 ForEach(viewModel.tags, id: \.tagID) { tag in
-                    let voted = viewModel.isVoted(tag: tag)
+                    let voted = viewModel.isVoted(tag: tag, service: userVotingService)
                     PostTagView(tag: tag, voted: voted, textColor: style.textColor) {
-                        viewModel.toggleVote(tag: tag, vote: !voted)
+                        viewModel.toggleVote(post: post, tag: tag, vote: !voted)
                     } onTap: { tag in
                         onTap(tag)
                     }
                     .frame(height: style.height)
                 }
             }
+        }
+        .onLoad {
+            viewModel.userVotingService = userVotingService
         }
     }
 }
@@ -120,7 +125,7 @@ struct HorizontalTagsScrollView: View {
     VStack {
         HorizontalTagsScrollView(
             post: nil,
-            tags: [
+            viewModel: .init(tags: [
                 .init(
                     postID: 1,
                     tag: "Tag1",
@@ -131,8 +136,7 @@ struct HorizontalTagsScrollView: View {
                     tag: "TagTag2",
                     tagID: 2,
                     score: 1),
-            ],
-            votes: []
+            ])
         )
     }
     .padding()

@@ -61,7 +61,6 @@ struct MainView: View {
             guard let user else { return }
             fetchAvatar(user: user)
         })
-        .interfaceOrientations(.portrait)
     }
     
     @ViewBuilder

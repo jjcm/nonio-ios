@@ -59,7 +59,6 @@ struct InboxScreen: View {
                 PostDetailsScreen(
                     viewModel: .init(
                         postURL: notification.post,
-                        votes: [],
                         scrollToComment: notification.comment_id
                     )
                 )
@@ -69,7 +68,7 @@ struct InboxScreen: View {
         .onLoad {
             viewModel.fetch()
         }
-        .onChange(of: viewModel.unreadCountUpdated) { count in
+        .onChange(of: viewModel.unreadCountUpdated) { _, count in
             guard let count else { return }
             notificationDataTicker.updateCount(count)
         }

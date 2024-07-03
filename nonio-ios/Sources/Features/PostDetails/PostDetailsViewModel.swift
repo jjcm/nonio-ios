@@ -17,7 +17,6 @@ final class PostDetailsViewModel: ObservableObject {
         CommentVotesViewModel(postURL: postURL)
     }()
 
-    let votes: [Vote]
 
     let postURL: String
     private let parser = QuillParser()
@@ -27,11 +26,9 @@ final class PostDetailsViewModel: ObservableObject {
 
     init(
         postURL: String,
-        votes: [Vote],
         scrollToComment: Int? = nil
     ) {
         self.postURL = postURL
-        self.votes = votes
         self.scrollToCommentID = scrollToComment
     }
 
@@ -44,7 +41,6 @@ final class PostDetailsViewModel: ObservableObject {
         self.commentViewModels = commentViewModels
         self.postURL = post.url
         self.scrollToCommentID = nil
-        self.votes = votes
     }
 
     func onLoad() {
