@@ -87,8 +87,7 @@ struct MainView: View {
 
     private func fetchAvatar(user: LoginResponse) {
         KingfisherManager.shared.retrieveImage(
-            with: ImageURLGenerator.userAvatarURL(user: user.username),
-            options: [.forceRefresh]
+            with: ImageURLGenerator.userAvatarURL(user: user.username)
         ) { result in
             switch result {
             case .success(let result):
