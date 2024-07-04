@@ -10,6 +10,7 @@ struct PostsScreen: View {
     @State private var selectedUser: String?
     @State private var selectedPost: Post?
     @State private var showTagsSearchView = false
+    @State private var showTags = false
 
     var body: some View {
         ZStack {
@@ -79,6 +80,7 @@ struct PostsScreen: View {
                 })
             }
         }
+        .overlay(showTags ? tagsScreen : nil)
         .onLoad {
             viewModel.fetch()
         }
@@ -114,14 +116,11 @@ struct PostsScreen: View {
     func toolbarItems() -> some ToolbarContent {
         if !viewModel.isUserPosts {
             ToolbarItem(placement: .topBarLeading) {
-                NavigationLink(destination: TagsScreen(viewModel: viewModel.tagsViewModel) { tag in
-                    self.viewModel.onSelectTag(tag)
-                } didSelectAll: {
-                    self.viewModel.onSelectAllPosts()
-                }, label: {
+                Button {
+                    toggleTagsScreen()
+                } label: {
                     Icon(image: R.image.tag.image, size: .medium)
-                })
-                .navigationTitle("Posts")
+                }
             }
         }
         
@@ -163,6 +162,25 @@ struct PostsScreen: View {
     func timeFrameButtons() -> some View {
         ForEach(GetPostParams.Time.allCases, id: \.rawValue) { time in
             Button(time.display) { viewModel.onSelectTimeframe(time) }
+        }
+    }
+
+    var tagsScreen: some View {
+        TagsScreen(
+            viewModel: viewModel.tagsViewModel) { tag in
+                viewModel.onSelectTag(tag)
+                toggleTagsScreen()
+            } didSelectAll: {
+                viewModel.onSelectAllPosts()
+                toggleTagsScreen()
+            } didCancel: {
+                toggleTagsScreen()
+            }
+    }
+
+    private func toggleTagsScreen() {
+        withAnimation {
+            showTags.toggle()
         }
     }
 }
