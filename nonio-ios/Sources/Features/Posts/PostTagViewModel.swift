@@ -1,15 +1,15 @@
 import Foundation
 import Moya
 import Combine
+import SwiftUI
 
 final class PostTagViewModel: ObservableObject {
-    @Published private(set) var tags: [PostTag] = []
-
     let provider = NonioProvider.default
     private var cancellables: Set<AnyCancellable> = []
     private var votingMap: [Int: Bool] = [:]
-
-    var userVotingService: UserVotingService?
+    
+    @Published private(set) var errorMessage: String?
+    @Published var tags: [PostTag]
 
     init(tags: [PostTag]) {
         self.tags = tags
@@ -19,7 +19,7 @@ final class PostTagViewModel: ObservableObject {
         service.isVoted(tag: tag) == true
     }
 
-    func toggleVote(post: String?, tag: PostTag, vote: Bool) {
+    func toggleVote(post: String?, tag: PostTag, vote: Bool, service: UserVotingService) {
         guard let post else { return }
         if votingMap[tag.tagID] == true {
             // return if request is loading
@@ -29,22 +29,21 @@ final class PostTagViewModel: ObservableObject {
         updateLoading(tag: tag, loading: true)
 
         if vote {
-            addVote(post: post, tag: tag)
+            addVote(post: post, tag: tag, servcie: service)
         } else {
-            removeVote(post: post, tag: tag)
+            removeVote(post: post, tag: tag, servcie: service)
         }
     }
 
-    private func addVote(post: String, tag: PostTag) {
+    private func addVote(post: String, tag: PostTag, servcie: UserVotingService) {
         provider.requestPublisher(.addVote(post: post, tag: tag.tag))
             .map(Vote.self)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in
-                
+            .sink(receiveCompletion: { [weak self] result in
+                self?.handleError(result)
+                self?.updateLoading(tag: tag, loading: false)
             }, receiveValue: { [weak self] vote in
                 guard let self else { return }
-
-                self.updateLoading(tag: tag, loading: false)
                 self.tags = self.tags.map { old in
                     var newTag = old
                     if newTag.tagID == tag.tagID {
@@ -52,20 +51,20 @@ final class PostTagViewModel: ObservableObject {
                     }
                     return newTag
                 }
-                self.userVotingService?.addVote(vote)
+                servcie.addVote(vote)
             })
             .store(in: &cancellables)
     }
     
-    private func removeVote(post: String, tag: PostTag) {
+    private func removeVote(post: String, tag: PostTag, servcie: UserVotingService) {
         provider.requestPublisher(.removeVote(post: post, tag: tag.tag))
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in
-                
+            .sink(receiveCompletion: { [weak self] result in
+                self?.handleError(result)
+                self?.updateLoading(tag: tag, loading: false)
             }, receiveValue: { [weak self] _ in
                 guard let self else { return }
 
-                self.updateLoading(tag: tag, loading: false)
                 self.tags = self.tags.map { old in
                     var newTag = old
                     if newTag.tagID == tag.tagID {
@@ -73,13 +72,23 @@ final class PostTagViewModel: ObservableObject {
                     }
                     return newTag
                 }
-                self.userVotingService?.remoteVote(tag)
+                .filter({ $0.score > 0 })
+                servcie.remoteVote(tag)
             })
             .store(in: &cancellables)
     }
     
     private func updateLoading(tag: PostTag, loading: Bool) {
         votingMap[tag.tagID] = loading
+    }
+
+    private func handleError(_ result: Subscribers.Completion<MoyaError>) {
+        switch result {
+        case .finished:
+            break
+        case .failure(let failure):
+            errorMessage = failure.errorMessage
+        }
     }
 }
 

@@ -2,10 +2,25 @@ import SwiftUI
 import Kingfisher
 
 struct PostRowView: View {
-    let viewModel: PostViewModel
+    @ObservedObject var viewModel: PostViewModel
     let didTapUserProfileAction: (() -> Void)
     let didTapTag: ((PostTag) -> Void)
     let didTapPostLink: ((Post) -> Void)?
+    @State private var showTagsSearchView = false
+
+    init(
+        viewModel: PostViewModel,
+        didTapUserProfileAction: @escaping () -> Void,
+        didTapTag: @escaping (PostTag) -> Void,
+        didTapPostLink: ( (Post) -> Void)?,
+        showTagsSearchView: Bool = false
+    ) {
+        self.viewModel = viewModel
+        self.didTapUserProfileAction = didTapUserProfileAction
+        self.didTapTag = didTapTag
+        self.didTapPostLink = didTapPostLink
+        self.showTagsSearchView = showTagsSearchView
+    }
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -15,6 +30,16 @@ struct PostRowView: View {
             userView
             tagsView
         }
+        .sheet(isPresented: $showTagsSearchView, content: {
+            SearchScreen(showCreateNewTag: true) { tag in
+                showTagsSearchView = false
+                if let tag {
+                    viewModel.addTag(tag.tag)
+                }
+            } onCancel: {
+                showTagsSearchView = false
+            }
+        })
         .padding(.vertical, 10)
         .background(UIColor.systemBackground.color)
     }
@@ -65,11 +90,36 @@ struct PostRowView: View {
             style: .init(height: 24, textColor: .secondary),
             onTap: { tag in
                 didTapTag(tag)
+            }, onAdd: {
+                showTagsSearchView = true
             }
         )
+        .environmentObject(PostTagViewModel(tags: viewModel.tags))
         .padding(.horizontal, 16)
-        .showIf(viewModel.shouldShowTags)
     }
+}
+
+#Preview {
+    PostRowView(
+        viewModel: .init(post: Post(
+            id: 1,
+            title: "test image",
+            user: "user",
+            time: 1717334831000,
+            url: "test-image-2",
+            link: nil,
+            type: .image,
+            content: "{\"ops\":[{\"insert\":\"test description\\n\"}]}",
+            score: 10,
+            commentCount: 20,
+            tags: [.init(postID: 1, tag: "Tag", tagID: 100, score: 1)]
+        )),
+        didTapUserProfileAction: {}, 
+        didTapTag: { _ in },
+        didTapPostLink: nil
+    )
+    .fixedSize()
+    .environmentObject(AppSettings())
 }
 
 #Preview {

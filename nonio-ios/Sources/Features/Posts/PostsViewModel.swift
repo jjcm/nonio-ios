@@ -6,7 +6,7 @@ import UIKit
 
 class PostsViewModel: ObservableObject {
     @Published private(set) var posts: [Post] = []
-    @Published private(set) var loading = true
+    @Published private(set) var loading = false
     @Published private(set) var currentTag: Tag = .all {
         didSet {
             tagsViewModel.selectTag(currentTag)
@@ -31,9 +31,18 @@ class PostsViewModel: ObservableObject {
     init(user: String? = nil) {
         self.user = user
     }
-    
-    func fetch() {
-        loading = true
+
+    func refresh() {
+        fetch(showLoading: false)
+    }
+
+    func fetch(showLoading: Bool = true) {
+        guard !loading else { return }
+
+        if showLoading {
+            loading = showLoading
+        }
+
         let params: RequestParamsType
         if let user {
             params = GetUserPostParams(user: user)

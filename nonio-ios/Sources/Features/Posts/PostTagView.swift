@@ -87,36 +87,63 @@ extension HorizontalTagsScrollView {
 struct HorizontalTagsScrollView: View {
     @StateObject var viewModel: PostTagViewModel
     @EnvironmentObject var userVotingService: UserVotingService
+    @EnvironmentObject var alertInteractor: GlobalAlertObject
+
     let post: String?
     let style: Style
     let onTap: ((PostTag) -> Void)
+    let onAdd: (() -> Void)?
     init(
         post: String?,
         viewModel: PostTagViewModel,
         style: Style = .default,
-        onTap: @escaping ((PostTag)) -> Void = { _ in }
+        onTap: @escaping ((PostTag)) -> Void = { _ in },
+        onAdd: (() -> Void)? = nil
     ) {
         self._viewModel = .init(wrappedValue: viewModel)
         self.style = style
         self.onTap = onTap
         self.post = post
+        self.onAdd = onAdd
     }
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            LazyHStack {
-                ForEach(viewModel.tags, id: \.tagID) { tag in
-                    let voted = viewModel.isVoted(tag: tag, service: userVotingService)
-                    PostTagView(tag: tag, voted: voted, textColor: style.textColor) {
-                        viewModel.toggleVote(post: post, tag: tag, vote: !voted)
-                    } onTap: { tag in
-                        onTap(tag)
+        HStack {
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack {
+                    ForEach(viewModel.tags, id: \.tag) { tag in
+                        let isVoted = viewModel.isVoted(tag: tag, service: userVotingService)
+                        PostTagView(tag: tag, voted: isVoted, textColor: style.textColor) {
+                            viewModel.toggleVote(
+                                post: post,
+                                tag: tag,
+                                vote: !isVoted,
+                                service: userVotingService
+                            )
+                        } onTap: { tag in
+                            onTap(tag)
+                        }
+                        .frame(height: style.height)
                     }
-                    .frame(height: style.height)
+                }
+            }
+
+            if let onAdd {
+                Button {
+                    onAdd()
+                } label: {
+                    R.image.tagAdd.image
+                        .resizable()
+                        .frame(width: 28, height: 24)
                 }
             }
         }
-        .onLoad {
-            viewModel.userVotingService = userVotingService
+        .onReceive(viewModel.$errorMessage) { error in
+            guard let error else { return }
+            alertInteractor.alert = Alert(
+                title: Text("Oops"),
+                message: Text(error),
+                dismissButton: .default(Text("Please try again"))
+            )
         }
     }
 }

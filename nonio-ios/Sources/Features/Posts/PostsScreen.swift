@@ -81,8 +81,8 @@ struct PostsScreen: View {
             }
         }
         .overlay(showTags ? tagsScreen : nil)
-        .onLoad {
-            viewModel.fetch()
+        .onAppear {
+            viewModel.refresh()
         }
     }
     

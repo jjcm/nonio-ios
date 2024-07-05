@@ -6,17 +6,21 @@ import Combine
 final class PostDetailsViewModel: ObservableObject {
     
     @Published private(set) var loading: Bool = false
-    @Published private(set) var post: Post?
+    @Published private(set) var post: Post? {
+        didSet {
+            tags = post?.tags ?? []
+        }
+    }
     @Published private(set) var commentViewModels: [CommentModel] = []
     @Published private(set) var commentCount: Int = 0
     @Published private(set) var scrollToComment: Int?
     @Published private(set) var title: String = ""
     @Published private(set) var postContent: [QuillViewRenderObject] = []
+    @Published var tags: [PostTag] = []
 
     private(set) lazy var commentVotesViewModel: CommentVotesViewModel = {
         CommentVotesViewModel(postURL: postURL)
     }()
-
 
     let postURL: String
     private let parser = QuillParser()
@@ -38,6 +42,7 @@ final class PostDetailsViewModel: ObservableObject {
         votes: [Vote]
     ) {
         self.post = post
+        self.tags = post.tags
         self.commentViewModels = commentViewModels
         self.postURL = post.url
         self.scrollToCommentID = nil
@@ -46,6 +51,18 @@ final class PostDetailsViewModel: ObservableObject {
     func onLoad() {
         getPost()
         getComments()
+    }
+
+    func addTag(_ tag: String, postID: Int) {
+        provider.requestPublisher(.postTagCreate(post: postURL, tag: tag))
+            .map(PostTagCreateResponse.self)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in
+            }, receiveValue: { [weak self] response in
+                guard let self else { return }
+                self.tags.insert(.init(postID: postID, tag: tag, tagID: response.tagID, score: 1), at: 0)
+            })
+            .store(in: &cancellables)
     }
 }
 
@@ -97,7 +114,7 @@ private extension PostDetailsViewModel {
             })
             .store(in: &cancellables)
     }
-    
+
     // TODO: update sorting logic
     func buildCommentHierarchy(from allComments: [Comment]) {
         let commentsDict = Dictionary(uniqueKeysWithValues: allComments.map { ($0.id, CommentModel(comment: $0, level: 0)) })
@@ -157,10 +174,6 @@ extension Post {
 
     var shouldShowLink: Bool {
         link != nil
-    }
-
-    var shouldShowTags: Bool {
-        !tags.isEmpty
     }
 
     var mediaSize: CGSize {

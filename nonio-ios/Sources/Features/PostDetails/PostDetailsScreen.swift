@@ -12,6 +12,7 @@ struct PostDetailsScreen: View {
     @State private var showEditorWithComment: Comment?
     @State private var commentAnimationHasShown: Bool = false
     @State private var animationEnded: Bool = false
+    @State private var showTagsSearchView = false
 
     let onTap: ((PostTag) -> Void)
     init(
@@ -94,6 +95,16 @@ struct PostDetailsScreen: View {
                         scrollProxy.scrollTo(id)
                     }
                 }
+                .sheet(isPresented: $showTagsSearchView, content: {
+                    SearchScreen(showCreateNewTag: true) { tag in
+                        showTagsSearchView = false
+                        if let tag, let post = viewModel.post {
+                            viewModel.addTag(tag.tag, postID: post.ID)
+                        }
+                    } onCancel: {
+                        showTagsSearchView = false
+                    }
+                })
             }
         }
         .openURL(viewModel: openURLViewModel)
@@ -175,10 +186,12 @@ struct PostDetailsScreen: View {
         ) { tag in
             onTap(tag)
             dismiss()
+        } onAdd: {
+            showTagsSearchView = true
         }
+        .environmentObject(PostTagViewModel(tags: viewModel.tags))
         .padding(.horizontal, 16)
         .padding(.bottom, 10)
-        .showIf(post.shouldShowTags)
     }
     
     var commentsView: some View {

@@ -204,5 +204,5 @@ struct UserScreen: View {
 }
 
 #Preview {
-    UserScreen(param: .user("mike.x"))
+    UserScreen(param: .user("jjcm"))
 }
