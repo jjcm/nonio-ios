@@ -11,6 +11,18 @@ struct PostDetailsScreen: View {
     @State private var commentAnimationHasShown: Bool = false
     @State private var animationEnded: Bool = false
 
+    init(
+        viewModel: PostDetailsViewModel,
+        openURLViewModel: ShowInAppBrowserViewModel = ShowInAppBrowserViewModel(),
+        selectedUser: String? = nil,
+        showCommentEditor: Bool = false
+    ) {
+        self._viewModel = .init(wrappedValue: viewModel)
+        self.openURLViewModel = openURLViewModel
+        self.selectedUser = selectedUser
+        self.showCommentEditor = showCommentEditor
+    }
+
     var body: some View {
         NavigationStack {
             VStack {
@@ -229,4 +241,26 @@ private extension PostDetailsScreen {
     func replyComment(_ comment: CommentModel) {
         showEditorWithComment = comment.comment
     }
+}
+
+#Preview {
+    PostDetailsScreen(
+        viewModel: .init(
+            post: Post(
+                id: 1,
+                title: "test image",
+                user: "user",
+                time: 1717334831000,
+                url: "test-image-2",
+                link: nil,
+                type: .image,
+                content: "{\"ops\":[{\"insert\":\"test description\\n\"}]}",
+                score: 10,
+                commentCount: 20,
+                tags: [.init(postID: 1, tag: "Tag", tagID: 100, score: 1)]
+            ),
+            votes: []
+        )   
+    )
+    .environmentObject(AppSettings())
 }

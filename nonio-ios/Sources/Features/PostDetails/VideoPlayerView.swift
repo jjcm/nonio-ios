@@ -66,3 +66,10 @@ struct VideoPlayerView: View {
         return String(format: "%d:%02d", minutes, seconds)
     }
 }
+
+
+#Preview {
+    VideoPlayerView(url: URL(string: "https://video.non.io/upload-video.mp4")!)
+        .frame(maxWidth: .infinity)
+        .frame(height: 200)
+}

@@ -54,3 +54,12 @@ extension QuillContentView {
         return contentWidth - quoteLeading
     }
 }
+
+#Preview {
+    QuillContentView(
+        contents: QuillParser().parseQuillJS(json: "{\"ops\":[{\"insert\":\"test\"},{\"attributes\":{\"blockquote\":true},\"insert\":\"\\n\"},{\"insert\":\"\\n\"}]}"),
+        contentWidth: UIScreen.main.bounds.width,
+        didTapOnURL: { _ in }
+    )
+    .padding()
+}

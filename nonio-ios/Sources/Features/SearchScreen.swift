@@ -94,3 +94,12 @@ struct SearchScreen: View {
         }
     }
 }
+
+#Preview {
+    SearchScreen(
+        showCreateNewTag: false) { tag in
+
+        } onCancel: {
+            print(">>onCancel")
+        }
+}

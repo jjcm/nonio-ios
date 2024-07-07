@@ -98,3 +98,26 @@ struct HorizontalTagsScrollView: View {
         }
     }
 }
+
+#Preview {
+    VStack {
+        HorizontalTagsScrollView(
+            post: nil,
+            tags: [
+                .init(
+                    postID: 1,
+                    tag: "Tag1",
+                    tagID: 1,
+                    score: 1),
+                .init(
+                    postID: 2,
+                    tag: "TagTag2",
+                    tagID: 2,
+                    score: 1),
+            ],
+            votes: []
+        )
+    }
+    .padding()
+    .environmentObject(AppSettings())
+}
