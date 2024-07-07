@@ -116,7 +116,7 @@ struct LoginScreen: View {
             .listRowSeparator(.hidden)
             .listStyle(.plain)
             .openURL(viewModel: openURLViewModel)
-            .onChange(of: viewModel.loginResponse) { response in
+            .onChange(of: viewModel.loginResponse) { _, response in
                 guard let response else { return }
                 settings.currentUser = response
             }

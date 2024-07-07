@@ -7,16 +7,19 @@ struct PostTagView: View {
     let voted: Bool
     let textColor: Color
     let toggleVoteAction: (() -> Void)
+    let onTap: ((PostTag) -> Void)
     init(
         tag: PostTag,
         voted: Bool,
         textColor: Color,
-        toggleVoteAction: @escaping () -> Void
+        toggleVoteAction: @escaping () -> Void,
+        onTap: @escaping ((PostTag)) -> Void
     ) {
         self.tag = tag
         self.voted = voted
         self.textColor = textColor
         self.toggleVoteAction = toggleVoteAction
+        self.onTap = onTap
     }
     
     var body: some View {
@@ -36,14 +39,18 @@ struct PostTagView: View {
             .padding(6)
             .showIf(tag.score > 0)
             
-            Text(tag.tag)
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(textColor)
-                .padding(.horizontal, 8)
-                .cornerRadius(2)
-                .frame(maxHeight: .infinity)
-                .background(Style.tagBGColor)
+            Button {
+                onTap(tag)
+            } label: {
+                Text(tag.tag)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(textColor)
+                    .padding(.horizontal, 8)
+                    .cornerRadius(2)
+                    .frame(maxHeight: .infinity)
+                    .background(Style.tagBGColor)
+            }
         }
         .background(Style.bgColor)
         .cornerRadius(8)
@@ -78,23 +85,65 @@ extension HorizontalTagsScrollView {
 }
 
 struct HorizontalTagsScrollView: View {
-    @ObservedObject var viewModel: PostTagViewModel
+    @StateObject var viewModel: PostTagViewModel
+    @EnvironmentObject var userVotingService: UserVotingService
+    @EnvironmentObject var alertInteractor: GlobalAlertObject
+
+    let post: String?
     let style: Style
-    init(post: String?, tags: [PostTag], votes: [Vote], style: Style = .default) {
-        self.viewModel = PostTagViewModel(post: post, tags: tags, votes: votes)
+    let onTap: ((PostTag) -> Void)
+    let onAdd: (() -> Void)?
+    init(
+        post: String?,
+        viewModel: PostTagViewModel,
+        style: Style = .default,
+        onTap: @escaping ((PostTag)) -> Void = { _ in },
+        onAdd: (() -> Void)? = nil
+    ) {
+        self._viewModel = .init(wrappedValue: viewModel)
         self.style = style
+        self.onTap = onTap
+        self.post = post
+        self.onAdd = onAdd
     }
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            LazyHStack {
-                ForEach(viewModel.tags, id: \.tagID) { tag in
-                    let voted = viewModel.isVoted(tag: tag)
-                    PostTagView(tag: tag, voted: voted, textColor: style.textColor) {
-                        viewModel.toggleVote(tag: tag, vote: !voted)
+        HStack {
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack {
+                    ForEach(viewModel.tags, id: \.tag) { tag in
+                        let isVoted = viewModel.isVoted(tag: tag, service: userVotingService)
+                        PostTagView(tag: tag, voted: isVoted, textColor: style.textColor) {
+                            viewModel.toggleVote(
+                                post: post,
+                                tag: tag,
+                                vote: !isVoted,
+                                service: userVotingService
+                            )
+                        } onTap: { tag in
+                            onTap(tag)
+                        }
+                        .frame(height: style.height)
                     }
-                    .frame(height: style.height)
                 }
             }
+
+            if let onAdd {
+                Button {
+                    onAdd()
+                } label: {
+                    R.image.tagAdd.image
+                        .resizable()
+                        .frame(width: 28, height: 24)
+                }
+            }
+        }
+        .onReceive(viewModel.$errorMessage) { error in
+            guard let error else { return }
+            alertInteractor.alert = Alert(
+                title: Text("Oops"),
+                message: Text(error),
+                dismissButton: .default(Text("Please try again"))
+            )
         }
     }
 }
@@ -103,7 +152,7 @@ struct HorizontalTagsScrollView: View {
     VStack {
         HorizontalTagsScrollView(
             post: nil,
-            tags: [
+            viewModel: .init(tags: [
                 .init(
                     postID: 1,
                     tag: "Tag1",
@@ -114,8 +163,7 @@ struct HorizontalTagsScrollView: View {
                     tag: "TagTag2",
                     tagID: 2,
                     score: 1),
-            ],
-            votes: []
+            ])
         )
     }
     .padding()

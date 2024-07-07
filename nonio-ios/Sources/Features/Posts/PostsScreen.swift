@@ -3,12 +3,14 @@ import Combine
 
 struct PostsScreen: View {
     @EnvironmentObject var settings: AppSettings
+    @EnvironmentObject var votingService: UserVotingService
     @StateObject var viewModel: PostsViewModel
     @State private var showSortTimeframeActionSheet = false
     @State private var showSortActionSheet = false
     @State private var selectedUser: String?
     @State private var selectedPost: Post?
     @State private var showTagsSearchView = false
+    @State private var showTags = false
 
     var body: some View {
         ZStack {
@@ -41,11 +43,14 @@ struct PostsScreen: View {
                 }
                 .refreshable {
                     viewModel.fetch()
-                    viewModel.fetchVotes(hasLoggedIn: settings.hasLoggedIn)
+
+                    if settings.hasLoggedIn {
+                        votingService.fetchVotes()
+                    }
                 }
-                .onChange(of: viewModel.displayTag, perform: { _ in
+                .onChange(of: viewModel.displayTag) {
                     proxy.scrollTo(viewModel.posts.first?.ID)
-                })
+                }
                 .background(UIColor.secondarySystemBackground.color)
                 .navigationDestination(for: $selectedUser) { user in
                     UserScreen(param: .user(user))
@@ -53,11 +58,15 @@ struct PostsScreen: View {
                 .navigationTitle(viewModel.title)
                 .navigationDestination(for: $selectedPost) { post in
                     PostDetailsScreen(
-                        viewModel: .init(
-                            postURL: post.url,
-                            votes: viewModel.votes
+                        viewModel: .init(postURL: post.url)
+                    ) { tag in
+                        viewModel.onSelectTag(
+                            .init(
+                                tag: tag.tag,
+                                count: tag.tag.count
+                            )
                         )
-                    )
+                    }
                 }
                 .sheet(isPresented: $showTagsSearchView, content: {
                     SearchScreen { tag in
@@ -71,12 +80,9 @@ struct PostsScreen: View {
                 })
             }
         }
-        .onChange(of: settings.hasLoggedIn, perform: { hasLoggedIn in
-            viewModel.fetchVotes(hasLoggedIn: hasLoggedIn)
-        })
-        .onLoad {
-            viewModel.fetch()
-            viewModel.fetchVotes(hasLoggedIn: settings.hasLoggedIn)
+        .overlay(showTags ? tagsScreen : nil)
+        .onAppear {
+            viewModel.refresh()
         }
     }
     
@@ -87,9 +93,16 @@ struct PostsScreen: View {
         } label: {
             PostRowView(
                 viewModel: .init(post: post),
-                votes: viewModel.votes,
                 didTapUserProfileAction: {
                     selectedUser = post.user
+                }, 
+                didTapTag: { tag in
+                    viewModel.onSelectTag(
+                        .init(
+                            tag: tag.tag,
+                            count: tag.tag.count
+                        )
+                    )
                 },
                 didTapPostLink: {
                     post in
@@ -103,36 +116,30 @@ struct PostsScreen: View {
     func toolbarItems() -> some ToolbarContent {
         if !viewModel.isUserPosts {
             ToolbarItem(placement: .topBarLeading) {
-                NavigationLink(destination: TagsScreen(viewModel: viewModel.tagsViewModel) { tag in
-                    self.viewModel.onSelectTag(tag)
-                } didSelectAll: {
-                    self.viewModel.onSelectAllPosts()
-                }, label: {
+                Button {
+                    toggleTagsScreen()
+                } label: {
                     Icon(image: R.image.tag.image, size: .medium)
-                })
-                .navigationTitle("Posts")
+                }
             }
         }
         
         ToolbarItem(placement: .principal) {
-            Text(viewModel.title)
-                .font(.headline)
-                .foregroundColor(.secondary)
+            Button {
+                showTagsSearchView = true
+            } label: {
+                Text(viewModel.title)
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+            }
+
         }
         
         ToolbarItem(placement: .topBarTrailing) {
-            HStack {
-                Button {
-                    showTagsSearchView = true
-                } label: {
-                    Icon(image: Image(systemName: "magnifyingglass"), size: .small)
-                }
-                
-                Button {
-                    showSortActionSheet = true
-                } label: {
-                    Icon(image: R.image.sort.image, size: .medium)
-                }
+            Button {
+                showSortActionSheet = true
+            } label: {
+                Icon(image: R.image.sort.image, size: .medium)
             }
         }
     }
@@ -155,6 +162,25 @@ struct PostsScreen: View {
     func timeFrameButtons() -> some View {
         ForEach(GetPostParams.Time.allCases, id: \.rawValue) { time in
             Button(time.display) { viewModel.onSelectTimeframe(time) }
+        }
+    }
+
+    var tagsScreen: some View {
+        TagsScreen(
+            viewModel: viewModel.tagsViewModel) { tag in
+                viewModel.onSelectTag(tag)
+                toggleTagsScreen()
+            } didSelectAll: {
+                viewModel.onSelectAllPosts()
+                toggleTagsScreen()
+            } didCancel: {
+                toggleTagsScreen()
+            }
+    }
+
+    private func toggleTagsScreen() {
+        withAnimation {
+            showTags.toggle()
         }
     }
 }

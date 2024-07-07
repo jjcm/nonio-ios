@@ -3,7 +3,7 @@ import AVKit
 
 struct VideoPlayerView: View {
     var url: URL
-    private let player: AVPlayer
+    @State var player: AVPlayer = .init()
     @State private var playerLayer: AVPlayerLayer = .init()
     @State private var isMuted: Bool = false
     private var currentTime: Double = 0
@@ -12,7 +12,6 @@ struct VideoPlayerView: View {
 
     init(url: URL) {
         self.url = url
-        self.player = AVPlayer(url: url)
     }
 
     var body: some View {
@@ -39,12 +38,16 @@ struct VideoPlayerView: View {
                 .padding(.bottom)
             }
         }
-        .onLoad {
+        .onAppear {
+            player = .init(url: self.url)
             playerLayer = AVPlayerLayer(player: player)
             playerLayer.videoGravity = .resizeAspectFill
             player.play()
 
             addPeriodicTimeObserver()
+        }
+        .onDisappear {
+            player.pause()
         }
     }
 

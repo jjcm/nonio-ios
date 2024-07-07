@@ -1,36 +1,56 @@
 import SwiftUI
 
 struct TagsScreen: View {
-    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     @ObservedObject var viewModel: TagsViewModel
     var didSelect: (Tag) -> Void
     var didSelectAll: () -> Void
+    var didCancel: () -> Void
+
     init(
         viewModel: TagsViewModel,
         didSelect: @escaping (Tag) -> Void,
-        didSelectAll: @escaping () -> Void
+        didSelectAll: @escaping () -> Void,
+        didCancel: @escaping () -> Void
     ) {
         self.viewModel = viewModel
         self.didSelect = didSelect
         self.didSelectAll = didSelectAll
+        self.didCancel = didCancel
     }
     
     var body: some View {
         NavigationStack {
-            if viewModel.loading {
-                ProgressView()
-            } else {
-                allPostsRow()               
-                
-                List(viewModel.tags, id: \.self) { tag in
-                    tagRow(tag: tag)
-                        .listRowInsets(.init(top: 0, leading: 16, bottom: 0, trailing: 16))
+            VStack {
+                if viewModel.loading {
+                    ProgressView()
+                } else {
+                    allPostsRow()
+
+                    List(viewModel.tags, id: \.self) { tag in
+                        tagRow(tag: tag)
+                            .listRowInsets(.init(top: 0, leading: 16, bottom: 0, trailing: 16))
+                    }
+                    .listStyle(.plain)
+                    .navigationTitle("Tags")
+                    .navigationBarTitleDisplayMode(.inline)
                 }
-                .listStyle(.plain)
-                .navigationTitle("Tags")
-                .navigationBarTitleDisplayMode(.inline)
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        didCancel()
+                    } label: {
+                        HStack {
+                            Text("Posts")
+                            Image(systemName: "chevron.right")
+                                .frame(width: 17, height: 22)
+                                .foregroundStyle(.tint)
+                        }
+                    }
+                }
             }
         }
+        .transition(.move(edge: .leading))
         .onAppear {
             viewModel.fetch()
         }
@@ -39,7 +59,6 @@ struct TagsScreen: View {
     @ViewBuilder
     func tagRow(tag: Tag) -> some View {
         Button {
-            self.presentationMode.wrappedValue.dismiss()
             didSelect(tag)
         } label: {
             HStack(alignment: .center, spacing: 8) {
@@ -66,7 +85,6 @@ struct TagsScreen: View {
     @ViewBuilder
     func allPostsRow() -> some View {
         Button {
-            self.presentationMode.wrappedValue.dismiss()
             didSelectAll()
         } label: {
             HStack(spacing: 8) {
@@ -92,5 +110,7 @@ struct TagsScreen: View {
         
     } didSelectAll: {
         
+    } didCancel: {
+
     }
 }
