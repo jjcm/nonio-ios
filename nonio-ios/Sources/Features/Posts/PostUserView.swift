@@ -59,6 +59,7 @@ struct PostUserView: View {
                     }
 
                 }
+                .font(.system(size: 13))
             }
             .buttonStyle(.plain)
 
@@ -69,7 +70,7 @@ struct PostUserView: View {
                 Button {
                     upvoteAction?()
                 } label: {
-                    HStack {
+                    HStack(spacing: 2) {
                         if settings.hasLoggedIn {
                             Icon(image: R.image.upvote.image, size: .small)
                                 .foregroundStyle(voted ? Style.votedColor : Style.normalTextColor)
@@ -103,6 +104,7 @@ struct PostUserView: View {
                     .foregroundColor(.secondary)
                     .showIf(isCollapsed)
             }
+            .font(.system(size: 13))
             .foregroundColor(UIColor.darkGray.color)
             .layoutPriority(1)
         }

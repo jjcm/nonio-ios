@@ -39,7 +39,7 @@ struct CommentView: View {
                     didTapOnURL: didTapOnURL
                 )
                 .padding(.leading, leading)
-                .padding(.vertical, 12)
+                .padding(.vertical, 8)
                 .showIf(!comment.isCollapsed)
             }
             .padding(.horizontal, 16)
@@ -66,7 +66,7 @@ struct CommentView: View {
         ) {
             commentVotesViewModel.voteComment(comment: comment, vote: true)
         }
-        .padding(.bottom, 14)
+        .padding(.bottom, 0)
         .contentShape(Rectangle())
         .onLongPressGesture {
             if !comment.isLeaf {
