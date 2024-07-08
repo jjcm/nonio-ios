@@ -76,7 +76,7 @@ struct InboxScreen: View {
                     selectedUser = model.user
                 }
             )
-            .padding(.vertical, 10)
+            .padding(.top, 10)
 
             if !model.parent_content.isEmpty {
                 parentContent(model.parent_content)
@@ -87,7 +87,7 @@ struct InboxScreen: View {
                 contentWidth: UIScreen.main.bounds.width - Layout.horizontalPadding * 2,
                 didTapOnURL: openURLViewModel.handleURL(_:)
             )
-            .padding(.bottom, 8)
+            .padding(.bottom, 4)
 
             postLink(model: model)
                 .padding(.bottom, 10)
@@ -115,13 +115,13 @@ struct InboxScreen: View {
                 Text(model.post_title)
                     .foregroundColor(UIColor.label.color)
                     .font(.system(size: 14, weight: .medium))
-                    .padding(.leading, model.postImageURL == nil ? 16 : 0)
+                    .padding(.leading, model.postImageURL == nil ? 10 : 0)
 
                 Spacer()
 
                 Icon(image: R.image.chevronRight.image, size: .small)
                     .foregroundColor(UIColor.secondaryLabel.color)
-                    .padding(.trailing, 16)
+                    .padding(.trailing, 8)
             }
             .frame(height: 32)
             .background(UIColor.secondarySystemBackground.color)
@@ -136,7 +136,7 @@ struct InboxScreen: View {
             Rectangle()
                 .fill(UIColor.opaqueSeparator.color)
                 .frame(width: 2)
-                .frame(maxHeight: .infinity)
+                .frame(minHeight: 0)
 
             QuillContentView(
                 contents: viewModel.toParentContentQuillRenderObject(string: content),
@@ -144,6 +144,7 @@ struct InboxScreen: View {
                 didTapOnURL: openURLViewModel.handleURL(_:)
             )
         }
+        .padding(.vertical, 2)
     }
 }
 
@@ -161,8 +162,24 @@ private extension InboxScreen {
                     id: 1,
                     comment_id: 2,
                     date: 1717334831000,
-                    post: "post",
+                    post: "yoda",
                     post_title: "post title",
+                    content: "{\"ops\":[{\"insert\":\"Thank you!\\n\"}]}",
+                    user: "avocado",
+                    upvotes: 10,
+                    downvotes: 1,
+                    parent: -1,
+                    edited: false,
+                    read: false,
+                    post_type: "text",
+                    parent_content: "{\"ops\":[{\"insert\":\"Notifications are looking sick!\\n\"}]}"
+                ),
+                .init(
+                    id: 1,
+                    comment_id: 2,
+                    date: 1717334831000,
+                    post: "Complex discussion",
+                    post_title: "Complex discussion",
                     content: "{\"ops\":[{\"insert\":\"test comment\"},{\"attributes\":{\"blockquote\":true},\"insert\":\"\\n\"},{\"insert\":\"\\n\"}]}",
                     user: "user",
                     upvotes: 10,

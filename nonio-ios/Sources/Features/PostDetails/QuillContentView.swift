@@ -39,8 +39,8 @@ struct QuillContentView: View {
         Rectangle()
             .fill(Color.secondary.opacity(0.4))
             .frame(maxHeight: .infinity)
-            .frame(width: 6)
-            .padding(.trailing, 12)
+            .frame(width: 4)
+            .padding(.trailing, 8)
     }
 }
 

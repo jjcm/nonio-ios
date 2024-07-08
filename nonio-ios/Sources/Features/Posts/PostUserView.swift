@@ -44,7 +44,7 @@ struct PostUserView: View {
                         .clipShape(Circle())
                         .layoutPriority(1)
                     
-                    HStack {
+                    HStack(spacing: 4) {
                         Text(viewModel.user)
                             .foregroundColor(UIColor.label.color)
                             .fontWeight(viewModel.isReply ? .semibold : .regular)
@@ -53,8 +53,8 @@ struct PostUserView: View {
                         if let userText = viewModel.actionText {
                             Text(userText)
                                 .foregroundColor(viewModel.read ? UIColor.secondaryLabel.color : UIColor.label.color)
-                                .fontWeight(viewModel.isReply ? .semibold : .regular)
-                                .lineLimit(2)
+                                .fontWeight(.regular)
+                                .lineLimit(1)
                         }
                     }
 
@@ -88,12 +88,15 @@ struct PostUserView: View {
                         Icon(image: R.image.clock.image, size: .small)
                         Text(dateString)
                     }
+                    .foregroundColor(UIColor.secondaryLabel.color)
+                    
                 }
                 
                 HStack(spacing: 4) {
                     Icon(image: R.image.comment.image, size: .small)
                     Text(viewModel.commentString)
                 }
+                .foregroundColor(UIColor.secondaryLabel.color)
                 .showIf(viewModel.showCommentCount)
                 
                 Icon(image: R.image.chervronDown.image, size: .small)
@@ -125,30 +128,32 @@ extension PostUserView {
 }
 
 #Preview {
-    PostUserView(
-        viewModel: .init(
-            comment: .init(
-                id: 1,
-                date: 1717334831000,
-                post: "post",
-                postTitle: "title",
-                content: "{\"ops\":[{\"insert\":\"test comment\"},{\"attributes\":{\"blockquote\":true},\"insert\":\"\\n\"},{\"insert\":\"\\n\"}]}",
-                user: "user",
-                upvotes: 10,
-                downvotes: 1,
-                parent: -1,
-                lineageScore: 10,
-                descendentCommentCount: 20,
-                edited: false
+    VStack{
+        PostUserView(
+            viewModel: .init(
+                comment: .init(
+                    id: 1,
+                    date: 1717334831000,
+                    post: "post",
+                    postTitle: "title",
+                    content: "{\"ops\":[{\"insert\":\"test comment\"},{\"attributes\":{\"blockquote\":true},\"insert\":\"\\n\"},{\"insert\":\"\\n\"}]}",
+                    user: "user",
+                    upvotes: 10,
+                    downvotes: 1,
+                    parent: -1,
+                    lineageScore: 10,
+                    descendentCommentCount: 20,
+                    edited: false
+                ),
+                upvotesString: "10",
+                showUpvoteCount: true
             ),
-            upvotesString: "10",
-            showUpvoteCount: true
-        ),
-        commentVotesViewModel: .init(postURL: "url"),
-        isCollapsed: false,
-        didTapUserProfileAction: {},
-        upvoteAction: { }
-    )
-    .padding()
-    .environmentObject(AppSettings())
+            commentVotesViewModel: .init(postURL: "url"),
+            isCollapsed: false,
+            didTapUserProfileAction: {},
+            upvoteAction: { }
+        )
+        .padding()
+        .environmentObject(AppSettings())
+    }
 }
