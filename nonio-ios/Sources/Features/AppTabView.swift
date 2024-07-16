@@ -1,7 +1,7 @@
 import SwiftUI
 import Kingfisher
 
-struct MainView: View {
+struct AppTabView: View {
     struct TabItemTag {
         static let posts = 1
         static let inbox = 2
@@ -100,7 +100,7 @@ struct MainView: View {
 }
 
 #Preview {
-    MainView()
+    AppTabView()
         .environmentObject(
             AppSettings(
                 user: .init(

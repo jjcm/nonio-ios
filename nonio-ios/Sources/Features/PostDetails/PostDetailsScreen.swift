@@ -13,6 +13,7 @@ struct PostDetailsScreen: View {
     @State private var commentAnimationHasShown: Bool = false
     @State private var animationEnded: Bool = false
     @State private var showTagsSearchView = false
+    @State private var presentFullScreenVideoPlayer: Bool = false
 
     let onTap: ((PostTag) -> Void)
     init(
@@ -105,6 +106,12 @@ struct PostDetailsScreen: View {
                         showTagsSearchView = false
                     }
                 })
+                .landscapeFullScreenCover(isPresented: $presentFullScreenVideoPlayer) {
+                    VideoPlayerView(url: viewModel.post?.videoURL) {
+                       presentFullScreenVideoPlayer = false
+                    }
+                    .ignoresSafeArea()
+                }
             }
         }
         .openURL(viewModel: openURLViewModel)
@@ -148,6 +155,16 @@ struct PostDetailsScreen: View {
                 VideoPlayerView(url: videoURL)
                     .frame(width: post.mediaSize.width)
                     .frame(height: post.mediaSize.height)
+                    .overlay(alignment: .topLeading) {
+                        Button {
+                            presentFullScreenVideoPlayer = true
+                        } label: {
+                            Icon(image: Image(systemName: "arrow.up.left.and.arrow.down.right"), size: .small)
+                                .foregroundColor(.white)
+                                .padding(.trailing)
+                        }
+                        .padding()
+                    }
             }
         default:
             EmptyView()
