@@ -3,6 +3,8 @@ import Kingfisher
 
 struct PostDetailsScreen: View {
     @EnvironmentObject var settings: AppSettings
+    @Environment(\.dismiss) var dismiss
+
     @StateObject var viewModel: PostDetailsViewModel
     @State private var openURLViewModel = ShowInAppBrowserViewModel()
     @State private var selectedUser: String?
@@ -10,17 +12,22 @@ struct PostDetailsScreen: View {
     @State private var showEditorWithComment: Comment?
     @State private var commentAnimationHasShown: Bool = false
     @State private var animationEnded: Bool = false
+    @State private var showTagsSearchView = false
+    @State private var presentFullScreenVideoPlayer: Bool = false
 
+    let onTap: ((PostTag) -> Void)
     init(
         viewModel: PostDetailsViewModel,
         openURLViewModel: ShowInAppBrowserViewModel = ShowInAppBrowserViewModel(),
         selectedUser: String? = nil,
-        showCommentEditor: Bool = false
+        showCommentEditor: Bool = false,
+        onTap: @escaping ((PostTag)) -> Void = { _ in }
     ) {
         self._viewModel = .init(wrappedValue: viewModel)
         self.openURLViewModel = openURLViewModel
         self.selectedUser = selectedUser
         self.showCommentEditor = showCommentEditor
+        self.onTap = onTap
     }
 
     var body: some View {
@@ -83,11 +90,27 @@ struct PostDetailsScreen: View {
                     }
                 }
                 .listStyle(.plain)
-                .onChange(of: viewModel.scrollToComment) { id in
+                .onChange(of: viewModel.scrollToComment) { _, id in
                     guard let id else { return }
                     withAnimation {
                         scrollProxy.scrollTo(id)
                     }
+                }
+                .sheet(isPresented: $showTagsSearchView, content: {
+                    SearchScreen(showCreateNewTag: true) { tag in
+                        showTagsSearchView = false
+                        if let tag, let post = viewModel.post {
+                            viewModel.addTag(tag.tag, postID: post.ID)
+                        }
+                    } onCancel: {
+                        showTagsSearchView = false
+                    }
+                })
+                .landscapeFullScreenCover(isPresented: $presentFullScreenVideoPlayer) {
+                    VideoPlayerView(url: viewModel.post?.videoURL) {
+                       presentFullScreenVideoPlayer = false
+                    }
+                    .ignoresSafeArea()
                 }
             }
         }
@@ -132,6 +155,16 @@ struct PostDetailsScreen: View {
                 VideoPlayerView(url: videoURL)
                     .frame(width: post.mediaSize.width)
                     .frame(height: post.mediaSize.height)
+                    .overlay(alignment: .topLeading) {
+                        Button {
+                            presentFullScreenVideoPlayer = true
+                        } label: {
+                            Icon(image: Image(systemName: "arrow.up.left.and.arrow.down.right"), size: .small)
+                                .foregroundColor(.white)
+                                .padding(.trailing)
+                        }
+                        .padding()
+                    }
             }
         default:
             EmptyView()
@@ -165,13 +198,17 @@ struct PostDetailsScreen: View {
     func tagsView(post: Post) -> some View {
         HorizontalTagsScrollView(
             post: post.url,
-            tags: post.tags,
-            votes: viewModel.votes,
+            viewModel: .init(tags: post.tags),
             style: .default
-        )
+        ) { tag in
+            onTap(tag)
+            dismiss()
+        } onAdd: {
+            showTagsSearchView = true
+        }
+        .environmentObject(PostTagViewModel(tags: viewModel.tags))
         .padding(.horizontal, 16)
         .padding(.bottom, 10)
-        .showIf(post.shouldShowTags)
     }
     
     var commentsView: some View {
@@ -260,7 +297,8 @@ private extension PostDetailsScreen {
                 tags: [.init(postID: 1, tag: "Tag", tagID: 100, score: 1)]
             ),
             votes: []
-        )   
+        ),
+        onTap: { _ in }
     )
     .environmentObject(AppSettings())
 }

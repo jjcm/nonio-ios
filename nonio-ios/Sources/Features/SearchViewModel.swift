@@ -7,7 +7,7 @@ class SearchViewModel: ObservableObject {
     @Published private(set) var tags: [Tag] = []
     private let showCreateNewTag: Bool
     private var cancellables = Set<AnyCancellable>()
-    @Published private(set) var loading = true
+    @Published private(set) var loading = false
     private let provider = MoyaProvider<NonioAPI>(plugins: [NetworkLoggerPlugin()])
 
     init(showCreateNewTag: Bool) {

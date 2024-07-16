@@ -9,11 +9,11 @@ struct UserScreen: View {
     }
     
     @EnvironmentObject var settings: AppSettings
-    @ObservedObject var viewModel: UserViewModel
+    @StateObject var viewModel: UserViewModel
     @State private var selectedRoute: Route?
 
     init(param: UserViewParamType) {
-        viewModel = UserViewModel(param: param)
+        self._viewModel = .init(wrappedValue: UserViewModel(param: param))
     }
     
     var body: some View {
@@ -93,15 +93,18 @@ struct UserScreen: View {
                 .padding(.horizontal)
             
             VStack(spacing: 0) {
-                row(
-                    title: "Posts",
-                    value: viewModel.posts,
-                    icon: R.image.postBlue.image,
-                    showIndicator: true
-                ) {
+                Button {
                     selectedRoute = .posts
+                } label: {
+                    row(
+                        title: "Posts",
+                        value: viewModel.posts,
+                        icon: R.image.postBlue.image,
+                        showIndicator: true
+                    )
                 }
-                
+                .buttonStyle(.plain)
+
                 Divider()
                     .padding(.leading)
                                         
@@ -157,32 +160,27 @@ struct UserScreen: View {
         title: String,
         value: String,
         icon: Image,
-        showIndicator: Bool,
-        onTap: @escaping (() -> Void) = {}
+        showIndicator: Bool
     ) -> some View {
-        Button {
-            onTap()
-        } label: {
-            HStack {
-                icon
-                           
-                Text(title)
-                    .padding(.leading, 16)
-                
-                Spacer()
-                
-                Text(value)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                
-                Icon(image: R.image.chevronRight.image, size: .big)
-                    .showIf(showIndicator)
-                    .frame(width: 16)
-                    .offset(x: 4)
-            }
-            .frame(height: 44)
-            .padding(.horizontal, 16)
+        HStack {
+            icon
+
+            Text(title)
+                .padding(.leading, 16)
+
+            Spacer()
+
+            Text(value)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+            Icon(image: R.image.chevronRight.image, size: .big)
+                .showIf(showIndicator)
+                .frame(width: 16)
+                .offset(x: 4)
         }
+        .frame(height: 44)
+        .padding(.horizontal, 16)
     }
     
     var avatarView: some View {
@@ -206,5 +204,5 @@ struct UserScreen: View {
 }
 
 #Preview {
-    UserScreen(param: .user("tom"))
+    UserScreen(param: .user("jjcm"))
 }

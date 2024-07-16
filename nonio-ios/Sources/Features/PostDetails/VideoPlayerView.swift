@@ -2,25 +2,43 @@ import SwiftUI
 import AVKit
 
 struct VideoPlayerView: View {
-    var url: URL
-    private let player: AVPlayer
+    var url: URL?
+    @State var player: AVPlayer = .init()
     @State private var playerLayer: AVPlayerLayer = .init()
     @State private var isMuted: Bool = false
     private var currentTime: Double = 0
     private var duration: Double = 0
     @State private var currentText: String = ""
+    private var exitFullScreen: (() -> Void)?
 
-    init(url: URL) {
+    private var isFullScreen: Bool {
+        exitFullScreen != nil
+    }
+
+    init(url: URL?, exitFullScreen: (() -> Void)? = nil) {
         self.url = url
-        self.player = AVPlayer(url: url)
+        self.exitFullScreen = exitFullScreen
     }
 
     var body: some View {
         ZStack {
             VideoPlayer(player: player)
+                .overlay(alignment: .topLeading) {
+                    if let exitFullScreen {
+                        Button {
+                            exitFullScreen()
+                        } label: {
+                            Icon(image: Image(systemName: "arrow.down.right.and.arrow.up.left"), size: .big)
+                                .foregroundColor(.white)
+                                .padding(.trailing)
+                        }
+                        .padding(20)
+                    }
+                }
 
             VStack {
                 Spacer()
+
                 HStack {
                     Text(currentText)
                         .foregroundColor(.white)
@@ -37,14 +55,22 @@ struct VideoPlayerView: View {
                     }
                 }
                 .padding(.bottom)
+                .padding(.horizontal)
             }
+            .showIf(!isFullScreen)
         }
-        .onLoad {
+        .onAppear {
+            if let url {
+                player = .init(url: url)
+            }
             playerLayer = AVPlayerLayer(player: player)
             playerLayer.videoGravity = .resizeAspectFill
             player.play()
 
             addPeriodicTimeObserver()
+        }
+        .onDisappear {
+            player.pause()
         }
     }
 
