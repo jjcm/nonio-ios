@@ -87,6 +87,11 @@ struct SearchScreen: View {
                             .foregroundColor(.blue)
                     }
                 }
+
+                ToolbarItem(placement: .topBarLeading) {
+                    ProgressView()
+                        .showIf(viewModel.loading)
+                }
             }
             .background(UIColor.secondarySystemBackground.color)
             .navigationTitle("Search Tags")

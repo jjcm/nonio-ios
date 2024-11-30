@@ -364,6 +364,7 @@ private extension PostSubmissionViewModel {
         tags = []
         link = ""
         parseURLReponse = nil
+        uploadSuccessResult = nil
     }
 
     func handleError(_ error: Error) {

@@ -11,6 +11,7 @@ enum NonioAPI: AuthTargetType {
     case getPosts(RequestParamsType)
     case getPost(id: String)
     case getTags(query: String?)
+    case postTagCreate(post: String, tag: String)
     case getComments(id: String)
     case login(user: String, password: String)
     case refreshAccessToken(refreshToken: String)
@@ -72,6 +73,8 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
         switch self {
         case .getPosts:
             return "posts"
+        case .postTagCreate:
+            return "posttag/create"
         case .getPost(let id):
             return "posts/\(id)"
         case .getTags(let query):
@@ -119,7 +122,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
         switch self {
         case .getPosts, .getTags, .getComments, .userInfo, .getVotes, .getCommentVotes, .getNotifications, .getNotificationsUnreadCount, .getPost, .checkURLAvailability:
             return .get
-        case .login, .addVote, .removeVote, .addCommentVote, .addComment, .markNotificationRead, .refreshAccessToken, .parseExternalURL, .uploadMedia, .postCreate, .moveURL:
+        case .login, .addVote, .removeVote, .addCommentVote, .addComment, .markNotificationRead, .refreshAccessToken, .parseExternalURL, .uploadMedia, .postCreate, .moveURL, .postTagCreate:
             return .post
         }
     }
@@ -183,6 +186,11 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
             let oldUrlPart = MultipartFormData(provider: .data(from.data(using: .utf8) ?? Data()), name: "oldUrl")
             let urlPart = MultipartFormData(provider: .data(to.data(using: .utf8) ?? Data()), name: "url")
             return .uploadMultipart([oldUrlPart, urlPart])
+        case .postTagCreate(let post, let tag):
+            return .requestParameters(
+                parameters: ["post": post, "tag": tag],
+                encoding: JSONEncoding.default
+            )
         }
     }
     
@@ -196,7 +204,7 @@ extension NonioAPI: TargetType, AccessTokenAuthorizable {
     
     var authorizationType: AuthorizationType? {
         switch self {
-        case .userInfo, .getVotes, .addVote, .removeVote, .getCommentVotes, .addCommentVote, .addComment, .getNotifications, .getNotificationsUnreadCount, .markNotificationRead, .parseExternalURL, .uploadMedia, .postCreate, .moveURL:
+        case .userInfo, .getVotes, .addVote, .removeVote, .getCommentVotes, .addCommentVote, .addComment, .getNotifications, .getNotificationsUnreadCount, .markNotificationRead, .parseExternalURL, .uploadMedia, .postCreate, .moveURL, .postTagCreate:
             return .bearer
         default:
             return nil

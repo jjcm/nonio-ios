@@ -83,7 +83,7 @@ extension Post {
     }  
 }
 
-struct PostTag: Codable {
+struct PostTag: Codable, Equatable {
     let postID: Int
     let tag: String
     let tagID: Int

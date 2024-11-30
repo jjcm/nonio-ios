@@ -32,8 +32,17 @@ struct InboxScreen: View {
 
     var content: some View {
         NavigationStack {
-            List(viewModel.models, id: \.self) { model in
-                row(model: model)
+            List {
+                if viewModel.models.isEmpty {
+                    Text("Your inbox is empty.")
+                        .font(.body)
+                        .foregroundStyle(UIColor.secondaryLabel.color)
+                        .padding()
+                        .plainListItem()
+                }
+                ForEach(viewModel.models, id: \.self) { model in
+                    row(model: model)
+                }
             }
             .listStyle(.plain)
             .listRowSpacing(8)
@@ -47,10 +56,9 @@ struct InboxScreen: View {
                 UserScreen(param: .user(user))
             }
             .navigationDestination(for: $selectedNotification) { notification in
-                return PostDetailsScreen(
+                PostDetailsScreen(
                     viewModel: .init(
                         postURL: notification.post,
-                        votes: [],
                         scrollToComment: notification.comment_id
                     )
                 )
@@ -60,7 +68,7 @@ struct InboxScreen: View {
         .onLoad {
             viewModel.fetch()
         }
-        .onChange(of: viewModel.unreadCountUpdated) { count in
+        .onChange(of: viewModel.unreadCountUpdated) { _, count in
             guard let count else { return }
             notificationDataTicker.updateCount(count)
         }

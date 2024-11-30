@@ -52,10 +52,7 @@ struct PostSubmissionScreen: View {
             })
             .navigationDestination(for: $viewModel.didCreatePost) { post in
                 PostDetailsScreen(
-                    viewModel: .init(
-                        postURL: post.url,
-                        votes: []
-                    )
+                    viewModel: .init(postURL: post.url)
                 )
             }
             .alert("Error", isPresented: $viewModel.showErrorAlert, actions: {

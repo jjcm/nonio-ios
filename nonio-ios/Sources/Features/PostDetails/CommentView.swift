@@ -91,7 +91,7 @@ private extension CommentView {
                 post: "post",
                 postTitle: "title",
                 content: "{\"ops\":[{\"insert\":\"test comment\"},{\"attributes\":{\"blockquote\":true},\"insert\":\"\\n\"},{\"insert\":\"\\n\"}]}",
-                user: "mike",
+                user: "tom",
                 upvotes: 10,
                 downvotes: 1,
                 parent: -1,
